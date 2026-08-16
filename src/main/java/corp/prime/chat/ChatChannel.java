@@ -3,7 +3,6 @@ package corp.prime.chat;
 import java.util.List;
 
 public class ChatChannel {
-
     private final String id;
     private final boolean enabled;
     private final String mode;
@@ -13,32 +12,10 @@ public class ChatChannel {
     private final String command;
     private final String permission;
     private final int radius;
-
-    /*
-     * ============================================================
-     * UNHEARD MESSAGE
-     * ============================================================
-     *
-     * null = настройка канала не задана,
-     * используется глобальная настройка из config.yml.
-     */
     private final Boolean unheardMessageEnabled;
     private final String unheardMessage;
 
-    public ChatChannel(
-            String id,
-            boolean enabled,
-            String mode,
-            String format,
-            List<String> aliases,
-            String trigger,
-            String command,
-            String permission,
-            int radius,
-            Boolean unheardMessageEnabled,
-            String unheardMessage
-    ) {
-
+    public ChatChannel(String id, boolean enabled, String mode, String format, List<String> aliases, String trigger, String command, String permission, int radius, Boolean unheardMessageEnabled, String unheardMessage) {
         this.id = id;
         this.enabled = enabled;
         this.mode = mode;
@@ -48,76 +25,22 @@ public class ChatChannel {
         this.command = command;
         this.permission = permission;
         this.radius = radius;
-
         this.unheardMessageEnabled = unheardMessageEnabled;
         this.unheardMessage = unheardMessage;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public String getMode() {
-        return mode;
-    }
-
-    public String getFormat() {
-        return format;
-    }
-
-    public List<String> getAliases() {
-        return aliases;
-    }
-
-    public String getTrigger() {
-        return trigger;
-    }
-
-    public String getCommand() {
-        return command;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public int getRadius() {
-        return radius;
-    }
-
-    /*
-     * ============================================================
-     * UNHEARD MESSAGE
-     * ============================================================
-     */
-
-    public Boolean getUnheardMessageEnabled() {
-        return unheardMessageEnabled;
-    }
-
-    public String getUnheardMessage() {
-        return unheardMessage;
-    }
-
-    /*
-     * ============================================================
-     * MODE HELPERS
-     * ============================================================
-     */
-
-    public boolean isLocal() {
-        return mode.equalsIgnoreCase("local");
-    }
-
-    public boolean isGlobal() {
-        return mode.equalsIgnoreCase("global");
-    }
-
-    public boolean isCommand() {
-        return mode.equalsIgnoreCase("command");
-    }
+    public String getId() { return id; }
+    public boolean isEnabled() { return enabled; }
+    public String getMode() { return mode; }
+    public String getFormat() { return format; }
+    public List<String> getAliases() { return aliases; }
+    public String getTrigger() { return trigger; }
+    public String getCommand() { return command; }
+    public String getPermission() { return permission; }
+    public int getRadius() { return radius; }
+    public Boolean getUnheardMessageEnabled() { return unheardMessageEnabled; }
+    public String getUnheardMessage() { return unheardMessage; }
+    public boolean isLocal() { return mode.equalsIgnoreCase("local"); }
+    public boolean isGlobal() { return mode.equalsIgnoreCase("global"); }
+    public boolean isCommand() { return mode.equalsIgnoreCase("command"); }
 }
