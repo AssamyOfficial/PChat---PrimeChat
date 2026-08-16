@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class ChatChannelCommand implements CommandExecutor {
-
     private final PrimeChat plugin;
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
@@ -19,194 +18,65 @@ public class ChatChannelCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(
-            CommandSender sender,
-            Command command,
-            String label,
-            String[] args
-    ) {
-
-        /*
-         * Командный чат доступен только игрокам.
-         */
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-
-            sender.sendMessage(
-                    "§cЭту команду может использовать только игрок."
-            );
-
+            sender.sendMessage("§cЭту команду может использовать только игрок.");
             return true;
         }
 
         Player player = (Player) sender;
-
-        /*
-         * Ищем канал по имени команды.
-         *
-         * Например:
-         *
-         * /ac
-         * /adminchat
-         *
-         * найдут канал admin.
-         */
-        ChatChannel channel =
-                plugin.getChatChannelManager()
-                        .getChannelByCommand(label);
+        ChatChannel channel = plugin.getChatChannelManager().getChannelByCommand(label);
 
         if (channel == null) {
-
-            player.sendMessage(
-                    "§cКанал не найден или отключён."
-            );
-
+            player.sendMessage("§cКанал не найден или отключён.");
             return true;
         }
 
-        /*
-         * Проверяем permission отправителя.
-         */
         String permission = channel.getPermission();
-
-        if (permission != null
-                && !permission.isEmpty()
-                && !player.hasPermission(permission)) {
-
-            player.sendMessage(
-                    "§cУ вас нет доступа к этому чату."
-            );
-
+        if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
+            player.sendMessage("§cУ вас нет доступа к этому чату.");
             return true;
         }
 
-        /*
-         * Без сообщения просто показываем подсказку.
-         */
         if (args.length == 0) {
-
-            player.sendMessage(
-                    "§7Использование: §f/"
-                            + label
-                            + " <сообщение>"
-            );
-
+            player.sendMessage("§7Использование: §f/" + label + " <сообщение>");
             return true;
         }
 
-        /*
-         * Собираем сообщение обратно в строку.
-         */
         String message = String.join(" ", args);
+        String format = channel.getFormat()
+                .replace("%player%", "__PRIMECHAT_PLAYER__")
+                .replace("%displayname%", "__PRIMECHAT_DISPLAYNAME__")
+                .replace("%display_name%", "__PRIMECHAT_DISPLAYNAME__")
+                .replace("%message%", "__PRIMECHAT_MESSAGE__");
 
-        /*
-         * Формат канала.
-         */
-        String format = channel.getFormat();
-
-        /*
-         * Защищаем собственные placeholders PrimeChat.
-         */
-        format = format
-                .replace(
-                        "%player%",
-                        "__PRIMECHAT_PLAYER__"
-                )
-                .replace(
-                        "%displayname%",
-                        "__PRIMECHAT_DISPLAYNAME__"
-                )
-                .replace(
-                        "%display_name%",
-                        "__PRIMECHAT_DISPLAYNAME__"
-                )
-                .replace(
-                        "%message%",
-                        "__PRIMECHAT_MESSAGE__"
-                );
-
-        /*
-         * PlaceholderAPI.
-         */
-        if (Bukkit.getPluginManager()
-                .isPluginEnabled("PlaceholderAPI")) {
-
-            format = PlaceholderAPI.setPlaceholders(
-                    player,
-                    format
-            );
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            format = PlaceholderAPI.setPlaceholders(player, format);
         }
 
-        /*
-         * Возвращаем PrimeChat placeholders.
-         */
         format = format
-                .replace(
-                        "__PRIMECHAT_PLAYER__",
-                        player.getName()
-                )
-                .replace(
-                        "__PRIMECHAT_DISPLAYNAME__",
-                        player.getDisplayName()
-                )
-                .replace(
-                        "__PRIMECHAT_MESSAGE__",
-                        message
-                );
+                .replace("__PRIMECHAT_PLAYER__", player.getName())
+                .replace("__PRIMECHAT_DISPLAYNAME__", player.getDisplayName())
+                .replace("__PRIMECHAT_MESSAGE__", message)
+                .replace("&0", "<black>").replace("&1", "<dark_blue>")
+                .replace("&2", "<dark_green>").replace("&3", "<dark_aqua>")
+                .replace("&4", "<dark_red>").replace("&5", "<dark_purple>")
+                .replace("&6", "<gold>").replace("&7", "<gray>")
+                .replace("&8", "<dark_gray>").replace("&9", "<blue>")
+                .replace("&a", "<green>").replace("&b", "<aqua>")
+                .replace("&c", "<red>").replace("&d", "<light_purple>")
+                .replace("&e", "<yellow>").replace("&f", "<white>")
+                .replace("&k", "<obfuscated>").replace("&l", "<bold>")
+                .replace("&m", "<strikethrough>").replace("&n", "<underlined>")
+                .replace("&o", "<italic>").replace("&r", "<reset>");
 
-        /*
-         * Поддержка &-цветов.
-         */
-        format = format
-                .replace("&0", "<black>")
-                .replace("&1", "<dark_blue>")
-                .replace("&2", "<dark_green>")
-                .replace("&3", "<dark_aqua>")
-                .replace("&4", "<dark_red>")
-                .replace("&5", "<dark_purple>")
-                .replace("&6", "<gold>")
-                .replace("&7", "<gray>")
-                .replace("&8", "<dark_gray>")
-                .replace("&9", "<blue>")
-                .replace("&a", "<green>")
-                .replace("&b", "<aqua>")
-                .replace("&c", "<red>")
-                .replace("&d", "<light_purple>")
-                .replace("&e", "<yellow>")
-                .replace("&f", "<white>")
-                .replace("&k", "<obfuscated>")
-                .replace("&l", "<bold>")
-                .replace("&m", "<strikethrough>")
-                .replace("&n", "<underlined>")
-                .replace("&o", "<italic>")
-                .replace("&r", "<reset>");
+        Component component = miniMessage.deserialize(format);
 
-        Component component =
-                miniMessage.deserialize(format);
-
-        /*
-         * Отправляем сообщение игрокам,
-         * которые имеют permission канала.
-         */
         for (Player viewer : Bukkit.getOnlinePlayers()) {
-
-            if (!plugin.getChatChannelRouter()
-                    .canReceiveMessage(
-                            player,
-                            viewer,
-                            channel
-                    )) {
-
-                continue;
+            if (plugin.getChatChannelRouter().canReceiveMessage(player, viewer, channel)) {
+                viewer.sendMessage(component);
             }
-
-            viewer.sendMessage(component);
         }
-
-        /*
-         * Если отправитель почему-то не получил сообщение,
-         * но имеет permission — это не страшно:
-         * обычная логика канала уже отвечает за аудиторию.
-         */
 
         return true;
     }
