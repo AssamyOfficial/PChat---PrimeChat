@@ -8,9 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class ChatChannelManager {
-
     private final PrimeChat plugin;
-
     private final List<ChatChannel> channels = new ArrayList<>();
 
     public ChatChannelManager(PrimeChat plugin) {
@@ -19,110 +17,43 @@ public class ChatChannelManager {
     }
 
     public void loadChannels() {
-
         channels.clear();
 
-        ConfigurationSection section =
-                plugin.getConfig().getConfigurationSection("channels");
-
+        ConfigurationSection section = plugin.getConfig().getConfigurationSection("channels");
         if (section == null) {
-
-            plugin.getLogger().warning(
-                    "Раздел 'channels' не найден в config.yml!"
-            );
-
+            plugin.getLogger().warning("Раздел 'channels' не найден в config.yml!");
             return;
         }
 
         for (String id : section.getKeys(false)) {
-
-            ConfigurationSection channelSection =
-                    section.getConfigurationSection(id);
-
+            ConfigurationSection channelSection = section.getConfigurationSection(id);
             if (channelSection == null) {
                 continue;
             }
 
-            boolean enabled =
-                    channelSection.getBoolean(
-                            "enabled",
-                            true
-                    );
-
-            String mode =
-                    channelSection.getString(
-                            "mode",
-                            "local"
-                    );
-
-            String format =
-                    channelSection.getString(
-                            "format",
-                            "<gray>[" + id + "]</gray> "
-                                    + "<aqua>%player%</aqua> "
-                                    + "<gray>»</gray> "
-                                    + "<white>%message%</white>"
-                    );
-
-            List<String> aliases =
-                    channelSection.getStringList(
-                            "aliases"
-                    );
-
-            String trigger =
-                    channelSection.getString(
-                            "trigger",
-                            ""
-                    );
-
-            String command =
-                    channelSection.getString(
-                            "command",
-                            ""
-                    );
-
-            String permission =
-                    channelSection.getString(
-                            "permission",
-                            ""
-                    );
-
-            int radius =
-                    channelSection.getInt(
-                            "radius",
-                            100
-                    );
-
-            /*
-             * ============================================================
-             * UNHEARD MESSAGE
-             * ============================================================
-             *
-             * null означает, что канал использует
-             * глобальную настройку из config.yml.
-             */
+            boolean enabled = channelSection.getBoolean("enabled", true);
+            String mode = channelSection.getString("mode", "local");
+            String format = channelSection.getString(
+                    "format",
+                    "<gray>[" + id + "]</gray> <aqua>%player%</aqua> <gray>»</gray> <white>%message%</white>"
+            );
+            List<String> aliases = channelSection.getStringList("aliases");
+            String trigger = channelSection.getString("trigger", "");
+            String command = channelSection.getString("command", "");
+            String permission = channelSection.getString("permission", "");
+            int radius = channelSection.getInt("radius", 100);
 
             Boolean unheardMessageEnabled = null;
-
             if (channelSection.contains("unheard-message.enabled")) {
-
-                unheardMessageEnabled =
-                        channelSection.getBoolean(
-                                "unheard-message.enabled"
-                        );
+                unheardMessageEnabled = channelSection.getBoolean("unheard-message.enabled");
             }
 
             String unheardMessage = null;
-
             if (channelSection.contains("unheard-message.message")) {
-
-                unheardMessage =
-                        channelSection.getString(
-                                "unheard-message.message"
-                        );
+                unheardMessage = channelSection.getString("unheard-message.message");
             }
 
-            ChatChannel channel = new ChatChannel(
+            channels.add(new ChatChannel(
                     id,
                     enabled,
                     mode,
@@ -134,75 +65,43 @@ public class ChatChannelManager {
                     radius,
                     unheardMessageEnabled,
                     unheardMessage
-            );
+            ));
 
-            channels.add(channel);
-
-            plugin.getLogger().info(
-                    "Загружен чат-канал: "
-                            + id
-                            + " ("
-                            + mode
-                            + ")"
-            );
+            plugin.getLogger().info("Загружен чат-канал: " + id + " (" + mode + ")");
         }
 
-        plugin.getLogger().info(
-                "Всего загружено каналов: "
-                        + channels.size()
-        );
+        plugin.getLogger().info("Всего загружено каналов: " + channels.size());
     }
 
     public ChatChannel getChannel(String id) {
-
         for (ChatChannel channel : channels) {
-
-            if (channel.getId()
-                    .equalsIgnoreCase(id)) {
-
+            if (channel.getId().equalsIgnoreCase(id)) {
                 return channel;
             }
         }
-
         return null;
     }
 
     public ChatChannel getChannelByCommand(String command) {
-
         if (command == null || command.isEmpty()) {
             return null;
         }
 
-        String cleanCommand = command;
-
-        if (cleanCommand.startsWith("/")) {
-            cleanCommand =
-                    cleanCommand.substring(1);
-        }
+        String cleanCommand = command.startsWith("/") ? command.substring(1) : command;
 
         for (ChatChannel channel : channels) {
-
-            if (!channel.isEnabled()) {
-                continue;
-            }
-
-            if (!channel.isCommand()) {
+            if (!channel.isEnabled() || !channel.isCommand()) {
                 continue;
             }
 
             if (channel.getCommand() != null
                     && !channel.getCommand().isEmpty()
-                    && channel.getCommand()
-                    .equalsIgnoreCase(cleanCommand)) {
-
+                    && channel.getCommand().equalsIgnoreCase(cleanCommand)) {
                 return channel;
             }
 
             for (String alias : channel.getAliases()) {
-
-                if (alias != null
-                        && alias.equalsIgnoreCase(cleanCommand)) {
-
+                if (alias != null && alias.equalsIgnoreCase(cleanCommand)) {
                     return channel;
                 }
             }
@@ -212,43 +111,20 @@ public class ChatChannelManager {
     }
 
     public List<ChatChannel> getChannels() {
-
-        return Collections.unmodifiableList(
-                channels
-        );
+        return Collections.unmodifiableList(channels);
     }
 
-    public void sendCommandChannelMessage(
-            Player sender,
-            ChatChannel channel,
-            String message
-    ) {
-
-        if (channel == null
-                || !channel.isEnabled()) {
-
+    public void sendCommandChannelMessage(Player sender, ChatChannel channel, String message) {
+        if (channel == null || !channel.isEnabled()) {
             return;
         }
 
-        String permission =
-                channel.getPermission();
-
-        if (permission != null
-                && !permission.isEmpty()
-                && !sender.hasPermission(permission)) {
-
-            sender.sendMessage(
-                    "§cУ вас нет прав для использования этого чата."
-            );
-
+        String permission = channel.getPermission();
+        if (permission != null && !permission.isEmpty() && !sender.hasPermission(permission)) {
+            sender.sendMessage("§cУ вас нет прав для использования этого чата.");
             return;
         }
 
-        plugin.getChatChannelMessageSender()
-                .send(
-                        sender,
-                        channel,
-                        message
-                );
+        plugin.getChatChannelMessageSender().send(sender, channel, message);
     }
 }
