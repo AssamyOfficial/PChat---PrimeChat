@@ -4,121 +4,41 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class PrimeChat extends JavaPlugin {
-
     private ChatChannelManager chatChannelManager;
-
     private ChatChannelRouter chatChannelRouter;
-
     private ChatFormatRenderer chatFormatRenderer;
-
     private ChatChannelFormatter chatChannelFormatter;
-
     private ChatChannelMessageSender chatChannelMessageSender;
 
     @Override
     public void onEnable() {
-
         saveDefaultConfig();
 
-        /*
-         * ========================================================
-         * CHAT CHANNELS
-         * ========================================================
-         */
+        chatChannelManager = new ChatChannelManager(this);
+        chatChannelRouter = new ChatChannelRouter(this);
+        chatFormatRenderer = new ChatFormatRenderer(this);
+        chatChannelFormatter = new ChatChannelFormatter(this);
+        chatChannelMessageSender = new ChatChannelMessageSender(this);
 
-        getLogger().info(
-                "=== PrimeChat: начинаем загрузку каналов ==="
-        );
+        getServer().getPluginManager().registerEvents(new ChatListener(this), this);
+        getServer().getPluginManager().registerEvents(new ChatChannelCommandListener(this), this);
 
-        chatChannelManager =
-                new ChatChannelManager(this);
+        getCommand("primechat").setExecutor(new PrimeChatCommand(this));
+        getCommand("primechat").setTabCompleter(new PrimeChatTabCompleter());
 
-        chatChannelRouter =
-                new ChatChannelRouter(this);
-
-        chatFormatRenderer =
-                new ChatFormatRenderer(this);
-
-        chatChannelFormatter =
-                new ChatChannelFormatter(this);
-
-        chatChannelMessageSender =
-                new ChatChannelMessageSender(this);
-
-        getLogger().info(
-                "=== PrimeChat: менеджер каналов создан ==="
-        );
-
-        /*
-         * ========================================================
-         * LISTENER
-         * ========================================================
-         */
-
-        getServer().getPluginManager().registerEvents(
-                new ChatListener(this),
-                this
-        );
-
-        getServer().getPluginManager().registerEvents(
-                new ChatChannelCommandListener(this),
-                this
-        );
-
-        /*
-         * ========================================================
-         * COMMAND
-         * ========================================================
-         */
-
-        getCommand("primechat").setExecutor(
-                new PrimeChatCommand(this)
-        );
-
-        getCommand("primechat").setTabCompleter(
-                new PrimeChatTabCompleter()
-        );
-
-        /*
-         * ========================================================
-         * PLACEHOLDER API
-         * ========================================================
-         */
-
-        if (Bukkit.getPluginManager()
-                .isPluginEnabled("PlaceholderAPI")) {
-
-            getLogger().info(
-                    "PlaceholderAPI найден. "
-                            + "Интеграция активирована."
-            );
-
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            getLogger().info("PlaceholderAPI найден. Интеграция активирована.");
         } else {
-
-            getLogger().info(
-                    "PlaceholderAPI не найден. "
-                            + "Работаем в автономном режиме."
-            );
+            getLogger().info("PlaceholderAPI не найден. Работаем в автономном режиме.");
         }
 
-        getLogger().info(
-                "PrimeChat 1.3.0 успешно запущен!"
-        );
+        getLogger().info("PrimeChat 1.2.0 успешно запущен!");
     }
 
     @Override
     public void onDisable() {
-
-        getLogger().info(
-                "PrimeChat выключен."
-        );
+        getLogger().info("PrimeChat выключен.");
     }
-
-    /*
-     * ============================================================
-     * GETTERS
-     * ============================================================
-     */
 
     public ChatChannelManager getChatChannelManager() {
         return chatChannelManager;
@@ -140,4 +60,3 @@ public final class PrimeChat extends JavaPlugin {
         return chatChannelMessageSender;
     }
 }
-
