@@ -5,12 +5,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class ChatChannelCommandHandler implements TabExecutor {
-
     private final PrimeChat plugin;
 
     public ChatChannelCommandHandler(PrimeChat plugin) {
@@ -18,22 +16,13 @@ public class ChatChannelCommandHandler implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(
-            CommandSender sender,
-            Command command,
-            String label,
-            String[] args
-    ) {
-
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("§cЭта команда доступна только игрокам.");
             return true;
         }
 
-        ChatChannel channel =
-                plugin.getChatChannelManager()
-                        .getChannelByCommand(label);
-
+        ChatChannel channel = plugin.getChatChannelManager().getChannelByCommand(label);
         if (channel == null) {
             return false;
         }
@@ -44,49 +33,26 @@ public class ChatChannelCommandHandler implements TabExecutor {
         }
 
         String permission = channel.getPermission();
-
-        if (permission != null
-                && !permission.isEmpty()
-                && !player.hasPermission(permission)) {
-
-            player.sendMessage(
-                    "§cУ вас нет прав для использования этого чата."
-            );
-
+        if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
+            player.sendMessage("§cУ вас нет прав для использования этого чата.");
             return true;
         }
 
         if (args.length == 0) {
-
-            player.sendMessage(
-                    "§7Использование: §f/"
-                            + label
-                            + " <сообщение>"
-            );
-
+            player.sendMessage("§7Использование: §f/" + label + " <сообщение>");
             return true;
         }
 
-        String message = String.join(" ", args);
-
-        plugin.getChatChannelManager()
-                .sendCommandChannelMessage(
-                        player,
-                        channel,
-                        message
-                );
-
+        plugin.getChatChannelManager().sendCommandChannelMessage(
+                player,
+                channel,
+                String.join(" ", args)
+        );
         return true;
     }
 
     @Override
-    public List<String> onTabComplete(
-            CommandSender sender,
-            Command command,
-            String alias,
-            String[] args
-    ) {
-
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         return Collections.emptyList();
     }
 }
