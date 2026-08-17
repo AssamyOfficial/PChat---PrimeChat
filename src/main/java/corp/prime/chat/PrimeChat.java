@@ -28,6 +28,7 @@ public final class PrimeChat extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
         getServer().getPluginManager().registerEvents(new ChatChannelCommandListener(this), this);
+        getServer().getPluginManager().registerEvents(new ChatChannelTabCompleter(this), this);
         getServer().getPluginManager().registerEvents(spyManager, this);
         getServer().getPluginManager().registerEvents(new CommandControlManager(this), this);
         getServer().getPluginManager().registerEvents(afkManager, this);
