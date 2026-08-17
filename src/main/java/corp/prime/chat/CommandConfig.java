@@ -40,6 +40,10 @@ public class CommandConfig {
         return config.getDouble(path, def);
     }
 
+    public long getLong(String path, long def) {
+        return config.getLong(path, def);
+    }
+
     public List<String> getStringList(String path) {
         return config.getStringList(path);
     }
