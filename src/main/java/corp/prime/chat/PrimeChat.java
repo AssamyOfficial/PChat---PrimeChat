@@ -29,7 +29,10 @@ public final class PrimeChat extends JavaPlugin {
         getCommand("primechat").setTabCompleter(new PrimeChatTabCompleter());
 
         PrivateMessageCommand privateMessageCommand = new PrivateMessageCommand(this);
+        PrivateMessageTabCompleter privateMessageTabCompleter = new PrivateMessageTabCompleter();
+
         getCommand("msg").setExecutor(privateMessageCommand);
+        getCommand("msg").setTabCompleter(privateMessageTabCompleter);
         getCommand("r").setExecutor(privateMessageCommand);
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
