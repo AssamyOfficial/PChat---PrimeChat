@@ -9,6 +9,7 @@ public final class PrimeChat extends JavaPlugin {
     private ChatFormatRenderer chatFormatRenderer;
     private ChatChannelFormatter chatChannelFormatter;
     private ChatChannelMessageSender chatChannelMessageSender;
+    private CommandConfig commandConfig;
 
     @Override
     public void onEnable() {
@@ -19,12 +20,15 @@ public final class PrimeChat extends JavaPlugin {
         chatFormatRenderer = new ChatFormatRenderer(this);
         chatChannelFormatter = new ChatChannelFormatter(this);
         chatChannelMessageSender = new ChatChannelMessageSender(this);
+        commandConfig = new CommandConfig(this);
 
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
         getServer().getPluginManager().registerEvents(new ChatChannelCommandListener(this), this);
 
         getCommand("primechat").setExecutor(new PrimeChatCommand(this));
         getCommand("primechat").setTabCompleter(new PrimeChatTabCompleter());
+        getCommand("msg").setExecutor(new PrivateMessageCommand(this));
+        getCommand("r").setExecutor(new PrivateMessageCommand(this));
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().info("PlaceholderAPI найден. Интеграция активирована.");
@@ -32,12 +36,18 @@ public final class PrimeChat extends JavaPlugin {
             getLogger().info("PlaceholderAPI не найден. Работаем в автономном режиме.");
         }
 
-        getLogger().info("PrimeChat 1.2.0 успешно запущен!");
+        getLogger().info("PrimeChat 1.3.0 успешно запущен!");
     }
 
     @Override
     public void onDisable() {
         getLogger().info("PrimeChat выключен.");
+    }
+
+    public void reloadPrimeChat() {
+        reloadConfig();
+        chatChannelManager.loadChannels();
+        commandConfig.reload();
     }
 
     public ChatChannelManager getChatChannelManager() {
@@ -58,5 +68,9 @@ public final class PrimeChat extends JavaPlugin {
 
     public ChatChannelMessageSender getChatChannelMessageSender() {
         return chatChannelMessageSender;
+    }
+
+    public CommandConfig getCommandConfig() {
+        return commandConfig;
     }
 }
