@@ -55,6 +55,12 @@ commands:
     description: Статус AFK
     usage: /afk
     permission: primechat.afk
+  chat:
+    description: Включить или выключить общий чат
+    usage: /chat <on|off>
+    aliases:
+      - ch
+    permission: primechat.chat.toggle
 
 permissions:
   primechat.admin:
@@ -78,6 +84,12 @@ permissions:
   primechat.afk:
     description: Позволяет использовать AFK
     default: true
+  primechat.chat.toggle:
+    description: Позволяет включать и выключать общий чат
+    default: op
+  primechat.chat.bypass:
+    description: Позволяет писать в чат при его отключении
+    default: op
   primechat.commandcontrol.bypass:
     description: Обход ограничений команд
     default: op
