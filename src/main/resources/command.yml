@@ -68,13 +68,12 @@ commands:
       - "op"
       - "stop"
     delays:
-      example:
-        enabled: false
-        seconds: 5
-        reduced-seconds: 2
-        reduced-permission: "primechat.commanddelay.reduce"
-        delay-execution: false
-        bypass-permission: "primechat.commanddelay.bypass"
+      spawn: 5
+      home: 10
+    delay-permissions:
+      bypass: "primechat.commanddelay.bypass"
+      reduce: "primechat.commanddelay.reduce"
+      reduced-seconds: 2
     messages:
       not-whitelisted: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Эта команда не разрешена.</gray>"
       blacklisted: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Эта команда запрещена.</gray>"
