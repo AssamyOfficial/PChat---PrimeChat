@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/01-cover.svg" alt="PrimeChat 1.3 cover">
+  <img src="docs/01-cover.webp" alt="PrimeChat 1.3 cover">
 </div>
 
 # PrimeChat 1.3.0
@@ -14,13 +14,13 @@
 Ниже — визуальная часть документации PrimeChat. Все страницы выполнены в едином стиле и служат быстрым обзором возможностей плагина. Под ними находится подробная техническая документация и рабочие примеры.
 
 <div align="center">
-  <img src="docs/02-features.svg" alt="PrimeChat features">
+  <img src="docs/02-features.webp" alt="PrimeChat features">
   <br><br>
-  <img src="docs/03-commands.svg" alt="PrimeChat commands">
+  <img src="docs/03-commands.webp" alt="PrimeChat commands">
   <br><br>
-  <img src="docs/04-settings.svg" alt="PrimeChat settings and permissions">
+  <img src="docs/04-settings.webp" alt="PrimeChat settings and permissions">
   <br><br>
-  <img src="docs/05-installation.svg" alt="PrimeChat installation and support">
+  <img src="docs/05-installation.webp" alt="PrimeChat installation and support">
 </div>
 
 ---
@@ -394,11 +394,11 @@ PrimeChat/
 │   ├── command.yml
 │   └── plugin.yml
 ├── docs/
-│   ├── 01-cover.svg
-│   ├── 02-features.svg
-│   ├── 03-commands.svg
-│   ├── 04-settings.svg
-│   └── 05-installation.svg
+│   ├── 01-cover.webp
+│   ├── 02-features.webp
+│   ├── 03-commands.webp
+│   ├── 04-settings.webp
+│   └── 05-installation.webp
 ├── pom.xml
 ├── LICENSE
 └── README.md
