@@ -28,20 +28,12 @@ public class CommandControlManager implements Listener {
         String raw = event.getMessage();
         String command = raw.substring(1).split(" ")[0].toLowerCase();
 
-        if (delayedExecution.remove(player.getUniqueId())) {
-            return;
-        }
-
-        if (isListed("commands.command-control.whitelist", command)) {
-            if (!plugin.getCommandConfig().getBoolean("commands.command-control.whitelist-enabled", false)) {
-                return;
-            }
-        }
+        if (delayedExecution.remove(player.getUniqueId())) return;
 
         if (plugin.getCommandConfig().getBoolean("commands.command-control.whitelist-enabled", false)
                 && !isListed("commands.command-control.whitelist", command)) {
             event.setCancelled(true);
-            send(player, "commands.command-control.messages.not-whitelisted", "<red>Эта команда недоступна.</red>");
+            send(player, "commands.command-control.messages.not-whitelisted", "<red>Эта команда не разрешена.</red>");
             return;
         }
 
@@ -53,43 +45,39 @@ public class CommandControlManager implements Listener {
         }
 
         String path = "commands.command-control.delays." + command;
-        if (!plugin.getCommandConfig().getBoolean(path + ".enabled", false)) {
-            return;
-        }
+        if (!plugin.getCommandConfig().getBoolean(path + ".enabled", false)) return;
 
         long seconds = plugin.getCommandConfig().getLong(path + ".seconds", 0L);
-        if (seconds <= 0) {
-            return;
+        String reducedPermission = plugin.getCommandConfig().getString(path + ".reduced-permission", "");
+        if (!reducedPermission.isEmpty() && player.hasPermission(reducedPermission)) {
+            seconds = plugin.getCommandConfig().getLong(path + ".reduced-seconds", seconds);
         }
 
         String bypass = plugin.getCommandConfig().getString(path + ".bypass-permission", "");
-        if (!bypass.isEmpty() && player.hasPermission(bypass)) {
-            return;
-        }
+        if (!bypass.isEmpty() && player.hasPermission(bypass)) return;
+        if (seconds <= 0) return;
 
         long now = System.currentTimeMillis();
-        long until = cooldowns
-                .computeIfAbsent(player.getUniqueId(), key -> new HashMap<>())
-                .getOrDefault(command, 0L);
+        Map<String, Long> playerCooldowns = cooldowns.computeIfAbsent(player.getUniqueId(), key -> new HashMap<>());
+        long until = playerCooldowns.getOrDefault(command, 0L);
 
         if (until > now) {
             long left = Math.max(1, (until - now + 999) / 1000);
             event.setCancelled(true);
-            send(player, "commands.command-control.messages.cooldown", "<yellow>Подождите %seconds% сек.</yellow>".replace("%seconds%", String.valueOf(left)));
+            send(player, "commands.command-control.messages.cooldown", "<yellow>Подождите <white>%seconds%</white> сек.</yellow>".replace("%seconds%", String.valueOf(left)));
             return;
         }
 
-        cooldowns.get(player.getUniqueId()).put(command, now + seconds * 1000L);
+        playerCooldowns.put(command, now + seconds * 1000L);
 
-        if (seconds > 0 && plugin.getCommandConfig().getBoolean(path + ".delay-execution", false)) {
+        if (plugin.getCommandConfig().getBoolean(path + ".delay-execution", false)) {
             event.setCancelled(true);
             delayedExecution.add(player.getUniqueId());
+            long ticks = seconds * 20L;
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (player.isOnline()) {
-                    player.performCommand(raw.substring(1));
-                }
+                if (player.isOnline()) player.performCommand(raw.substring(1));
                 delayedExecution.remove(player.getUniqueId());
-            }, seconds * 20L);
+            }, ticks);
         }
     }
 
