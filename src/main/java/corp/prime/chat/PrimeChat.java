@@ -10,6 +10,7 @@ public final class PrimeChat extends JavaPlugin {
     private ChatChannelFormatter chatChannelFormatter;
     private ChatChannelMessageSender chatChannelMessageSender;
     private CommandConfig commandConfig;
+    private SpyManager spyManager;
 
     @Override
     public void onEnable() {
@@ -21,9 +22,11 @@ public final class PrimeChat extends JavaPlugin {
         chatChannelFormatter = new ChatChannelFormatter(this);
         chatChannelMessageSender = new ChatChannelMessageSender(this);
         commandConfig = new CommandConfig(this);
+        spyManager = new SpyManager(this);
 
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
         getServer().getPluginManager().registerEvents(new ChatChannelCommandListener(this), this);
+        getServer().getPluginManager().registerEvents(spyManager, this);
 
         getCommand("primechat").setExecutor(new PrimeChatCommand(this));
         getCommand("primechat").setTabCompleter(new PrimeChatTabCompleter());
@@ -34,6 +37,9 @@ public final class PrimeChat extends JavaPlugin {
         getCommand("msg").setExecutor(privateMessageCommand);
         getCommand("msg").setTabCompleter(privateMessageTabCompleter);
         getCommand("r").setExecutor(privateMessageCommand);
+
+        getCommand("socialspy").setExecutor(new SpyCommand(this, spyManager, true));
+        getCommand("commandspy").setExecutor(new SpyCommand(this, spyManager, false));
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().info("PlaceholderAPI найден. Интеграция активирована.");
@@ -77,5 +83,9 @@ public final class PrimeChat extends JavaPlugin {
 
     public CommandConfig getCommandConfig() {
         return commandConfig;
+    }
+
+    public SpyManager getSpyManager() {
+        return spyManager;
     }
 }
