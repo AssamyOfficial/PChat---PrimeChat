@@ -109,6 +109,7 @@ public class PrivateMessageCommand implements CommandExecutor {
 
         sendFormatted("commands.msg.messages.format.outgoing", sender, sender, target, message);
         sendFormatted("commands.msg.messages.format.incoming", target, sender, target, message);
+        plugin.getSpyManager().notifyPrivateMessage(sender, target, message);
     }
 
     private void sendFormatted(String path, Player recipient, Player sender, Player target, String message) {
