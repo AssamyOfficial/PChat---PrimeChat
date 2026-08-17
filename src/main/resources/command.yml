@@ -3,18 +3,18 @@ commands:
     enabled: true
     permission: "primechat.msg"
     messages:
-      player-only: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Только игрок может использовать эту команду.</gray>"
-      disabled: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>ЛС отключены.</gray>"
-      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Нет прав на ЛС.</gray>"
-      usage: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>/msg <игрок> <сообщение></gray>"
-      player-not-found: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray><white>%player%</white> не найден или не в сети.</gray>"
-      self: "<gradient:#FFB347:#7C4DFF>◆</gradient> <gray>Нельзя написать себе.</gray>"
+      player-only: "<red>◆</red> <gray>Только игрок может использовать эту команду.</gray>"
+      disabled: "<red>◆</red> <gray>Личные сообщения отключены.</gray>"
+      no-permission: "<red>◆</red> <gray>У вас нет прав на личные сообщения.</gray>"
+      usage: "<red>◆</red> <gray>Использование: <white>/msg <игрок> <сообщение></white></gray>"
+      player-not-found: "<red>◆</red> <gray>Игрок <white>%player%</white> не найден или не в сети.</gray>"
+      self: "<red>◆</red> <gray>Нельзя отправить сообщение самому себе.</gray>"
       format:
         outgoing:
-          - "<gradient:#00E5FF:#7C4DFF>◆ ЛС</gradient> <dark_gray>→</dark_gray> <white>%recipient%</white>"
+          - "<#00E5FF>◆ ЛС</#00E5FF> <dark_gray>→</dark_gray> <gray>%recipient%</gray>"
           - "<gray>%message%</gray>"
         incoming:
-          - "<gradient:#7C4DFF:#00E5FF>◆ ЛС</gradient> <dark_gray>←</dark_gray> <white>%sender%</white>"
+          - "<#00E5FF>◆ ЛС</#00E5FF> <dark_gray>←</dark_gray> <gray>%sender%</gray>"
           - "<gray>%message%</gray>"
       notifications:
         sound:
@@ -24,37 +24,37 @@ commands:
           pitch: 1.0
         click:
           enabled: true
-          hover: "<gradient:#00E5FF:#7C4DFF>Нажмите, чтобы ответить</gradient>"
+          hover: "<gray>Нажмите, чтобы ответить</gray>"
 
   r:
     enabled: true
     messages:
-      player-only: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Только игрок может использовать эту команду.</gray>"
-      disabled: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Ответы отключены.</gray>"
-      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Нет прав на ЛС.</gray>"
-      usage: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>/r <сообщение></gray>"
-      no-target: "<gradient:#FFB347:#7C4DFF>◆</gradient> <gray>Нет собеседника для ответа.</gray>"
-      target-offline: "<gradient:#FFB347:#7C4DFF>◆</gradient> <gray>Собеседник не в сети.</gray>"
+      player-only: "<red>◆</red> <gray>Только игрок может использовать эту команду.</gray>"
+      disabled: "<red>◆</red> <gray>Ответы на личные сообщения отключены.</gray>"
+      no-permission: "<red>◆</red> <gray>У вас нет прав на личные сообщения.</gray>"
+      usage: "<red>◆</red> <gray>Использование: <white>/r <сообщение></white></gray>"
+      no-target: "<red>◆</red> <gray>Нет собеседника для ответа.</gray>"
+      target-offline: "<red>◆</red> <gray>Собеседник сейчас не в сети.</gray>"
 
   socialspy:
     enabled: true
     permission: "primechat.socialspy"
     messages:
-      player-only: "<red>Только игрок может использовать эту команду.</red>"
-      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Нет прав на SS.</gray>"
-      enabled: "<gradient:#55FFAA:#00E5FF>◆ SS</gradient> <gray>включён.</gray>"
-      disabled: "<gradient:#FF5577:#7C4DFF>◆ SS</gradient> <gray>выключен.</gray>"
-    format: "<gradient:#00E5FF:#7C4DFF>◆ SS</gradient> <gray>%sender% <dark_gray>→</dark_gray> %recipient%:</gray> <white>%message%</white>"
+      player-only: "<red>◆</red> <gray>Только игрок может использовать эту команду.</gray>"
+      no-permission: "<red>◆</red> <gray>У вас нет прав на SocialSpy.</gray>"
+      enabled: "<#00E5FF>◆ SS</#00E5FF> <dark_gray>включён.</dark_gray>"
+      disabled: "<#00E5FF>◆ SS</#00E5FF> <dark_gray>выключен.</dark_gray>"
+    format: "<#00E5FF>◆ SS</#00E5FF> <dark_gray>%sender% → %recipient%:</dark_gray> <gray>%message%</gray>"
 
   commandspy:
     enabled: true
     permission: "primechat.commandspy"
     messages:
-      player-only: "<red>Только игрок может использовать эту команду.</red>"
-      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Нет прав на CS.</gray>"
-      enabled: "<gradient:#55FFAA:#00E5FF>◆ CS</gradient> <gray>включён.</gray>"
-      disabled: "<gradient:#FF5577:#7C4DFF>◆ CS</gradient> <gray>выключен.</gray>"
-    format: "<gradient:#00E5FF:#7C4DFF>◆ CS</gradient> <gray>%player% <dark_gray>→</dark_gray></gray> <white>%command%</white>"
+      player-only: "<red>◆</red> <gray>Только игрок может использовать эту команду.</gray>"
+      no-permission: "<red>◆</red> <gray>У вас нет прав на CommandSpy.</gray>"
+      enabled: "<#00E5FF>◆ CS</#00E5FF> <dark_gray>включён.</dark_gray>"
+      disabled: "<#00E5FF>◆ CS</#00E5FF> <dark_gray>выключен.</dark_gray>"
+    format: "<#00E5FF>◆ CS</#00E5FF> <dark_gray>%player% →</dark_gray> <gray>%command%</gray>"
 
   command-control:
     bypass-permission: "primechat.commandcontrol.bypass"
@@ -75,23 +75,24 @@ commands:
       reduce: "primechat.commanddelay.reduce"
       reduced-seconds: 2
     messages:
-      not-whitelisted: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Эта команда не разрешена.</gray>"
-      blacklisted: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Эта команда запрещена.</gray>"
-      cooldown: "<gradient:#FFB347:#7C4DFF>◆</gradient> <gray>Подождите <white>%seconds%</white> сек.</gray>"
+      not-whitelisted: "<red>◆</red> <gray>Эта команда не разрешена.</gray>"
+      blacklisted: "<red>◆</red> <gray>Эта команда запрещена.</gray>"
+      cooldown: "<red>◆</red> <gray>Подождите <white>%seconds%</white> сек.</gray>"
 
   clearchat:
     enabled: true
     permission: "primechat.clearchat"
     messages:
-      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Нет прав на очистку чата.</gray>"
-      success: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Чат очищен.</gray>"
+      no-permission: "<red>◆</red> <gray>У вас нет прав на очистку чата.</gray>"
+      success: "<#00E5FF>◆</#00E5FF> <gray>Чат очищен.</gray>"
 
   afk:
     enabled: true
     permission: "primechat.afk"
-    status-suffix: " <gray>[AFK]</gray>"
+    status-suffix: " <dark_gray>[AFK]</dark_gray>"
     messages:
-      player-only: "<red>Только игрок может использовать эту команду.</red>"
-      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Нет прав на AFK.</gray>"
-      enabled: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Вы отошли от клавиатуры.</gray>"
-      disabled: "<gradient:#55FFAA:#00E5FF>◆</gradient> <gray>Вы снова активны.</gray>"
+      player-only: "<red>◆</red> <gray>Только игрок может использовать эту команду.</gray>"
+      no-permission: "<red>◆</red> <gray>У вас нет прав на AFK.</gray>"
+      enabled: "<#00E5FF>◆</#00E5FF> <gray>Вы отошли от клавиатуры.</gray>"
+      disabled: "<#00E5FF>◆</#00E5FF> <gray>Вы снова активны.</gray>"
+      sender-notice: "<yellow>◆</yellow> <gray>Сообщение отправлено. Игрок <white>%player%</white> сейчас AFK.</gray>"
