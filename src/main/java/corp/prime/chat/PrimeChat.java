@@ -11,6 +11,7 @@ public final class PrimeChat extends JavaPlugin {
     private ChatChannelMessageSender chatChannelMessageSender;
     private CommandConfig commandConfig;
     private SpyManager spyManager;
+    private AfkManager afkManager;
 
     @Override
     public void onEnable() {
@@ -23,23 +24,26 @@ public final class PrimeChat extends JavaPlugin {
         chatChannelMessageSender = new ChatChannelMessageSender(this);
         commandConfig = new CommandConfig(this);
         spyManager = new SpyManager(this);
+        afkManager = new AfkManager(this);
 
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
         getServer().getPluginManager().registerEvents(new ChatChannelCommandListener(this), this);
         getServer().getPluginManager().registerEvents(spyManager, this);
+        getServer().getPluginManager().registerEvents(new CommandControlManager(this), this);
+        getServer().getPluginManager().registerEvents(afkManager, this);
 
         getCommand("primechat").setExecutor(new PrimeChatCommand(this));
         getCommand("primechat").setTabCompleter(new PrimeChatTabCompleter());
 
         PrivateMessageCommand privateMessageCommand = new PrivateMessageCommand(this);
-        PrivateMessageTabCompleter privateMessageTabCompleter = new PrivateMessageTabCompleter();
-
         getCommand("msg").setExecutor(privateMessageCommand);
-        getCommand("msg").setTabCompleter(privateMessageTabCompleter);
+        getCommand("msg").setTabCompleter(new PrivateMessageTabCompleter());
         getCommand("r").setExecutor(privateMessageCommand);
 
         getCommand("socialspy").setExecutor(new SpyCommand(this, spyManager, true));
         getCommand("commandspy").setExecutor(new SpyCommand(this, spyManager, false));
+        getCommand("clearchat").setExecutor(new ClearChatCommand(this));
+        getCommand("afk").setExecutor(new AfkCommand(this, afkManager));
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().info("PlaceholderAPI найден. Интеграция активирована.");
@@ -61,31 +65,12 @@ public final class PrimeChat extends JavaPlugin {
         commandConfig.reload();
     }
 
-    public ChatChannelManager getChatChannelManager() {
-        return chatChannelManager;
-    }
-
-    public ChatChannelRouter getChatChannelRouter() {
-        return chatChannelRouter;
-    }
-
-    public ChatFormatRenderer getChatFormatRenderer() {
-        return chatFormatRenderer;
-    }
-
-    public ChatChannelFormatter getChatChannelFormatter() {
-        return chatChannelFormatter;
-    }
-
-    public ChatChannelMessageSender getChatChannelMessageSender() {
-        return chatChannelMessageSender;
-    }
-
-    public CommandConfig getCommandConfig() {
-        return commandConfig;
-    }
-
-    public SpyManager getSpyManager() {
-        return spyManager;
-    }
+    public ChatChannelManager getChatChannelManager() { return chatChannelManager; }
+    public ChatChannelRouter getChatChannelRouter() { return chatChannelRouter; }
+    public ChatFormatRenderer getChatFormatRenderer() { return chatFormatRenderer; }
+    public ChatChannelFormatter getChatChannelFormatter() { return chatChannelFormatter; }
+    public ChatChannelMessageSender getChatChannelMessageSender() { return chatChannelMessageSender; }
+    public CommandConfig getCommandConfig() { return commandConfig; }
+    public SpyManager getSpyManager() { return spyManager; }
+    public AfkManager getAfkManager() { return afkManager; }
 }
