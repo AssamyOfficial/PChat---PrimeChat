@@ -7,10 +7,12 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,61 +27,27 @@ public class ChatListener implements Listener {
         this.plugin = plugin;
     }
 
-    /*
-     * ============================================================
-     * MENTION FINDER
-     * ============================================================
-     */
-
     private Set<String> findMentionedPlayers(String message) {
-
         Set<String> mentions = new HashSet<>();
 
-        boolean enabled =
-                plugin.getConfig().getBoolean(
-                        "mentions.enabled",
-                        true
-                );
-
-        if (!enabled || message == null || message.isEmpty()) {
+        if (!plugin.getConfig().getBoolean("mentions.enabled", true)
+                || message == null
+                || message.isEmpty()) {
             return mentions;
         }
 
-        String symbol =
-                plugin.getConfig().getString(
-                        "mentions.symbol",
-                        "@"
-                );
-
+        String symbol = plugin.getConfig().getString("mentions.symbol", "@");
         if (symbol == null || symbol.isEmpty()) {
             symbol = "@";
         }
 
-        /*
-         * Minecraft-ник:
-         *
-         * буквы, цифры и _
-         *
-         * Например:
-         * @Assamy_
-         * @Assamy_2
-         * @Player123
-         */
-
-        Pattern pattern = Pattern.compile(
+        Matcher matcher = Pattern.compile(
                 Pattern.quote(symbol) + "([A-Za-z0-9_]+)"
-        );
-
-        Matcher matcher = pattern.matcher(message);
+        ).matcher(message);
 
         while (matcher.find()) {
-
-            String playerName =
-                    matcher.group(1);
-
-            if (playerName != null
-                    && !playerName.isEmpty()) {
-
+            String playerName = matcher.group(1);
+            if (playerName != null && !playerName.isEmpty()) {
                 mentions.add(playerName);
             }
         }
@@ -87,329 +55,109 @@ public class ChatListener implements Listener {
         return mentions;
     }
 
-    /*
-     * ============================================================
-     * MENTIONS
-     * ============================================================
-     */
-
-    private Component processMentions(
-            Component message
-    ) {
-
-        boolean enabled =
-                plugin.getConfig().getBoolean(
-                        "mentions.enabled",
-                        true
-                );
-
-        if (!enabled) {
+    private Component processMentions(Component message) {
+        if (!plugin.getConfig().getBoolean("mentions.enabled", true)) {
             return message;
         }
 
-        String symbol =
-                plugin.getConfig().getString(
-                        "mentions.symbol",
-                        "@"
-                );
+        String symbol = plugin.getConfig().getString("mentions.symbol", "@");
+        String color = plugin.getConfig().getString("mentions.color", "<aqua>");
+        boolean clickable = plugin.getConfig().getBoolean("mentions.clickable", true);
+        boolean hoverEnabled = plugin.getConfig().getBoolean("mentions.hover", true);
 
-        String color =
-                plugin.getConfig().getString(
-                        "mentions.color",
-                        "<aqua>"
-                );
+        if (symbol == null || symbol.isEmpty()) {
+            symbol = "@";
+        }
 
-        boolean clickable =
-                plugin.getConfig().getBoolean(
-                        "mentions.clickable",
-                        true
-                );
+        List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
+        onlinePlayers.sort((first, second) -> Integer.compare(
+                second.getName().length(),
+                first.getName().length()
+        ));
 
-        boolean hoverEnabled =
-                plugin.getConfig().getBoolean(
-                        "mentions.hover",
-                        true
-                );
+        Component result = message;
 
-        Component result =
-                message;
-
-        List<Player> onlinePlayers =
-                new java.util.ArrayList<>(
-                        Bukkit.getOnlinePlayers()
-                );
-
-        /*
-         * Сначала обрабатываем более длинные ники.
-         *
-         * Например:
-         *
-         * @Assamy_2
-         * @Assamy_
-         *
-         * Это предотвращает частичное совпадение.
-         */
-
-        onlinePlayers.sort(
-                (first, second) ->
-                        Integer.compare(
-                                second.getName().length(),
-                                first.getName().length()
-                        )
-        );
-
-        for (Player player :
-                onlinePlayers) {
-
-            String mention =
-                    symbol + player.getName();
-
-            Component mentionComponent =
-                    plugin.getChatFormatRenderer()
-                            .parseFormat(
-                                    color + mention
-                            );
-
-            /*
-             * ====================================================
-             * HOVER
-             * ====================================================
-             */
+        for (Player player : onlinePlayers) {
+            String mention = symbol + player.getName();
+            Component mentionComponent = plugin.getChatFormatRenderer()
+                    .parseFormat(color + mention);
 
             if (hoverEnabled) {
+                Component hover = Component.text()
+                        .append(Component.text("👤 "))
+                        .append(Component.text(player.getName()))
+                        .append(Component.newline())
+                        .append(Component.text("Игрок сервера"))
+                        .append(Component.newline())
+                        .append(Component.text("Нажмите, чтобы написать сообщение"))
+                        .build();
 
-                Component hover =
-                        Component.text()
-                                .append(
-                                        Component.text("👤 ")
-                                )
-                                .append(
-                                        Component.text(
-                                                player.getName()
-                                        )
-                                )
-                                .append(
-                                        Component.newline()
-                                )
-                                .append(
-                                        Component.text(
-                                                "Игрок сервера"
-                                        )
-                                )
-                                .append(
-                                        Component.newline()
-                                )
-                                .append(
-                                        Component.text(
-                                                "Нажмите, чтобы написать сообщение"
-                                        )
-                                )
-                                .build();
-
-                mentionComponent =
-                        mentionComponent.hoverEvent(
-                                HoverEvent.showText(
-                                        hover
-                                )
-                        );
+                mentionComponent = mentionComponent.hoverEvent(
+                        HoverEvent.showText(hover)
+                );
             }
-
-            /*
-             * ====================================================
-             * CLICK
-             * ====================================================
-             */
 
             if (clickable) {
-
-                mentionComponent =
-                        mentionComponent.clickEvent(
-                                ClickEvent.suggestCommand(
-                                        "/msg "
-                                                + player.getName()
-                                                + " "
-                                )
-                        );
+                mentionComponent = mentionComponent.clickEvent(
+                        ClickEvent.suggestCommand("/msg " + player.getName() + " ")
+                );
             }
 
-            Component finalMention =
-                    mentionComponent;
-
-            result =
-                    result.replaceText(
-                            builder -> builder
-                                    .matchLiteral(
-                                            mention
-                                    )
-                                    .replacement(
-                                            finalMention
-                                    )
-                    );
+            Component finalMention = mentionComponent;
+            result = result.replaceText(builder -> builder
+                    .matchLiteral(mention)
+                    .replacement(finalMention));
         }
 
         return result;
     }
-
-    /*
-     * ============================================================
-     * PROCESS MENTION NOTIFICATIONS
-     * ============================================================
-     *
-     * ВАЖНО:
-     *
-     * Этот метод получает viewers уже ПОСЛЕ фильтрации канала.
-     *
-     * Поэтому уведомление получает только тот игрок,
-     * который действительно видит сообщение.
-     */
 
     private void processMentionNotifications(
             String message,
             Player sender,
             Set<net.kyori.adventure.audience.Audience> viewers
     ) {
-
-        boolean enabled =
-                plugin.getConfig().getBoolean(
-                        "mentions.notification.enabled",
-                        true
-                );
-
-        if (!enabled) {
+        if (!plugin.getConfig().getBoolean(
+                "mentions.notification.enabled",
+                true
+        )) {
             return;
         }
 
-        Set<String> mentionedNames =
-                findMentionedPlayers(message);
-
+        Set<String> mentionedNames = findMentionedPlayers(message);
         if (mentionedNames.isEmpty()) {
             return;
         }
 
-        /*
-         * ========================================================
-         * КАЖДОЕ УПОМИНАНИЕ
-         * ========================================================
-         */
-
-        for (String mentionedName :
-                mentionedNames) {
-
-            /*
-             * ====================================================
-             * ONLINE PLAYER
-             * ====================================================
-             */
-
+        for (String mentionedName : mentionedNames) {
             Player onlinePlayer = null;
 
-            for (Player player :
-                    Bukkit.getOnlinePlayers()) {
-
-                if (player.getName()
-                        .equalsIgnoreCase(
-                                mentionedName
-                        )) {
-
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (player.getName().equalsIgnoreCase(mentionedName)) {
                     onlinePlayer = player;
                     break;
                 }
             }
 
-            /*
-             * ====================================================
-             * ИГРОК ОНЛАЙН
-             * ====================================================
-             */
-
             if (onlinePlayer != null) {
-
-                /*
-                 * Нельзя уведомлять самого себя.
-                 */
-
-                if (onlinePlayer.equals(sender)) {
+                if (onlinePlayer.equals(sender) || !viewers.contains(onlinePlayer)) {
                     continue;
                 }
 
-                /*
-                 * =================================================
-                 * ГЛАВНАЯ ПРОВЕРКА
-                 * =================================================
-                 *
-                 * Если игрок не находится среди viewers,
-                 * значит он не видит это сообщение.
-                 *
-                 * Например:
-                 *
-                 * local radius = 100
-                 *
-                 * sender -> 100 блоков
-                 * player -> 300 блоков
-                 *
-                 * player НЕ получит уведомление.
-                 */
-
-                if (!viewers.contains(onlinePlayer)) {
-                    continue;
-                }
-
-                plugin.getLogger().info(
-                        "Обнаружено упоминание: "
-                                + onlinePlayer.getName()
-                                + " от "
-                                + sender.getName()
-                );
-
-                sendMentionNotification(
-                        onlinePlayer,
-                        sender
-                );
-
+                sendMentionNotification(onlinePlayer, sender);
                 continue;
             }
 
-            /*
-             * ====================================================
-             * OFFLINE / NOT FOUND
-             * ====================================================
-             *
-             * Bukkit.getOfflinePlayer() может создать
-             * OfflinePlayer даже для несуществующего ника.
-             *
-             * Поэтому проверяем hasPlayedBefore().
-             */
-
-            org.bukkit.OfflinePlayer offlinePlayer =
-                    Bukkit.getOfflinePlayer(
-                            mentionedName
-                    );
-
-            /*
-             * ====================================================
-             * OFFLINE
-             * ====================================================
-             */
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(mentionedName);
 
             if (offlinePlayer.hasPlayedBefore()) {
-
                 sendMentionStatusNotification(
                         sender,
                         mentionedName,
                         "mentions.notification.offline",
                         "<yellow>⚠ Игрок <white>%player%</white> сейчас не в сети.</yellow>"
                 );
-
-            }
-
-            /*
-             * ====================================================
-             * NOT FOUND
-             * ====================================================
-             */
-
-            else {
-
+            } else {
                 sendMentionStatusNotification(
                         sender,
                         mentionedName,
@@ -420,104 +168,39 @@ public class ChatListener implements Listener {
         }
     }
 
-    /*
-     * ============================================================
-     * ONLINE PLAYER NOTIFICATION
-     * ============================================================
-     */
-
-    private void sendMentionNotification(
-            Player mentionedPlayer,
-            Player sender
-    ) {
-
-        /*
-         * Если игрок упомянул сам себя —
-         * уведомление не отправляем.
-         */
-
-        if (mentionedPlayer.equals(sender)) {
+    private void sendMentionNotification(Player mentionedPlayer, Player sender) {
+        if (mentionedPlayer.equals(sender)
+                || !plugin.getConfig().getBoolean(
+                "mentions.notification.enabled",
+                true
+        )) {
             return;
         }
 
-        boolean enabled =
-                plugin.getConfig().getBoolean(
-                        "mentions.notification.enabled",
-                        true
-                );
+        String message = plugin.getConfig().getString(
+                "mentions.notification.message",
+                "<yellow>🔔 <white>%player%</white> упомянул вас в чате.</yellow>"
+        );
 
-        if (!enabled) {
+        if (message == null || message.isEmpty()) {
             return;
         }
 
-        String message =
-                plugin.getConfig().getString(
-                        "mentions.notification.message",
-                        "<yellow>🔔 <white>%player%</white> упомянул вас в чате.</yellow>"
-                );
+        message = message
+                .replace("%player%", sender.getName())
+                .replace("%displayname%", sender.getDisplayName())
+                .replace("%display_name%", sender.getDisplayName());
 
-        if (message == null
-                || message.isEmpty()) {
-
-            return;
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            message = PlaceholderAPI.setPlaceholders(sender, message);
         }
 
-        message =
-                message.replace(
-                        "%player%",
-                        sender.getName()
-                );
-
-        message =
-                message.replace(
-                        "%displayname%",
-                        sender.getDisplayName()
-                );
-
-        message =
-                message.replace(
-                        "%display_name%",
-                        sender.getDisplayName()
-                );
-
-        /*
-         * PlaceholderAPI.
-         */
-
-        if (Bukkit.getPluginManager()
-                .isPluginEnabled(
-                        "PlaceholderAPI"
-                )) {
-
-            message =
-                    PlaceholderAPI.setPlaceholders(
-                            sender,
-                            message
-                    );
-        }
-
-        Component notification =
-                plugin.getChatFormatRenderer()
-                        .parseFormat(message);
-
-        /*
-         * Отправляем сообщение
-         * в основном потоке Bukkit.
-         */
-
+        Component notification = plugin.getChatFormatRenderer().parseFormat(message);
         Bukkit.getScheduler().runTask(
                 plugin,
-                () -> mentionedPlayer.sendMessage(
-                        notification
-                )
+                () -> mentionedPlayer.sendMessage(notification)
         );
     }
-
-    /*
-     * ============================================================
-     * OFFLINE / NOT FOUND NOTIFICATION
-     * ============================================================
-     */
 
     private void sendMentionStatusNotification(
             Player sender,
@@ -525,356 +208,130 @@ public class ChatListener implements Listener {
             String configPath,
             String defaultMessage
     ) {
+        String message = plugin.getConfig().getString(configPath, defaultMessage);
 
-        String message =
-                plugin.getConfig().getString(
-                        configPath,
-                        defaultMessage
-                );
-
-        if (message == null
-                || message.isEmpty()) {
-
+        if (message == null || message.isEmpty()) {
             return;
         }
 
-        message =
-                message.replace(
-                        "%player%",
-                        mentionedName
-                );
+        message = message
+                .replace("%player%", mentionedName)
+                .replace("%displayname%", mentionedName)
+                .replace("%display_name%", mentionedName);
 
-        message =
-                message.replace(
-                        "%displayname%",
-                        mentionedName
-                );
-
-        message =
-                message.replace(
-                        "%display_name%",
-                        mentionedName
-                );
-
-        /*
-         * PlaceholderAPI.
-         */
-
-        if (Bukkit.getPluginManager()
-                .isPluginEnabled(
-                        "PlaceholderAPI"
-                )) {
-
-            message =
-                    PlaceholderAPI.setPlaceholders(
-                            sender,
-                            message
-                    );
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            message = PlaceholderAPI.setPlaceholders(sender, message);
         }
 
-        Component notification =
-                plugin.getChatFormatRenderer()
-                        .parseFormat(message);
-
+        Component notification = plugin.getChatFormatRenderer().parseFormat(message);
         Bukkit.getScheduler().runTask(
                 plugin,
-                () -> sender.sendMessage(
-                        notification
-                )
+                () -> sender.sendMessage(notification)
         );
     }
 
-    /*
-     * ============================================================
-     * CHAT
-     * ============================================================
-     */
-
     @EventHandler
-    public void onChat(
-            AsyncChatEvent event
-    ) {
+    public void onChat(AsyncChatEvent event) {
+        Player sender = event.getPlayer();
+        String messageText = PlainTextComponentSerializer.plainText()
+                .serialize(event.message());
 
-        Player sender =
-                event.getPlayer();
-
-        /*
-         * Получаем обычный текст сообщения.
-         */
-
-        String messageText =
-                PlainTextComponentSerializer
-                        .plainText()
-                        .serialize(
-                                event.message()
-                        );
-
-        /*
-         * ========================================================
-         * CHANNEL
-         * ========================================================
-         */
-
-        ChatChannel channel =
-                plugin.getChatChannelRouter()
-                        .getChannelForMessage(
-                                sender,
-                                messageText
-                        );
-
-        /*
-         * Канал не найден —
-         * сообщение отменяется.
-         */
+        ChatChannel channel = plugin.getChatChannelRouter()
+                .getChannelForMessage(sender, messageText);
 
         if (channel == null) {
-
             event.setCancelled(true);
             return;
         }
 
-        /*
-         * ========================================================
-         * PERMISSION
-         * ========================================================
-         */
-
-        String permission =
-                channel.getPermission();
-
+        String permission = channel.getPermission();
         if (permission != null
                 && !permission.isEmpty()
-                && !sender.hasPermission(
-                permission
-        )) {
-
+                && !sender.hasPermission(permission)) {
             event.setCancelled(true);
-
             Bukkit.getScheduler().runTask(
                     plugin,
                     () -> sender.sendMessage(
-                            plugin.getChatFormatRenderer()
-                                    .parseFormat(
-                                            "<red>У вас нет прав для использования этого чата.</red>"
-                                    )
+                            plugin.getChatFormatRenderer().parseFormat(
+                                    "<red>У вас нет прав для использования этого чата.</red>"
+                            )
                     )
             );
-
             return;
         }
 
-        /*
-         * ========================================================
-         * TRIGGER
-         * ========================================================
-         */
+        String processedMessage = plugin.getChatChannelRouter()
+                .removeTrigger(channel, messageText);
 
-        String processedMessage =
-                plugin.getChatChannelRouter()
-                        .removeTrigger(
-                                channel,
-                                messageText
-                        );
-
-        /*
-         * "!" / "!   "
-         */
-
-        if (processedMessage
-                .trim()
-                .isEmpty()) {
-
+        if (processedMessage.trim().isEmpty()) {
             event.setCancelled(true);
             return;
         }
 
-        /*
-         * ========================================================
-         * RENDER
-         * ========================================================
-         */
+        Component finalFormatted = plugin.getChatFormatRenderer()
+                .render(sender, channel, processedMessage, event.message());
 
-        Component finalFormatted =
-                plugin.getChatFormatRenderer()
-                        .render(
-                                sender,
-                                channel,
-                                processedMessage,
-                                event.message()
-                        );
+        finalFormatted = processMentions(finalFormatted);
 
-        /*
-         * ========================================================
-         * MENTIONS
-         * ========================================================
-         */
+        event.viewers().removeIf(audience -> {
+            if (!(audience instanceof Player)) {
+                return false;
+            }
 
-        finalFormatted =
-                processMentions(
-                        finalFormatted
+            return !plugin.getChatChannelRouter().canReceiveMessage(
+                    sender,
+                    (Player) audience,
+                    channel
+            );
+        });
+
+        processMentionNotifications(messageText, sender, event.viewers());
+
+        boolean someoneHeard = event.viewers().stream()
+                .filter(audience -> audience instanceof Player)
+                .map(audience -> (Player) audience)
+                .anyMatch(player -> !player.equals(sender));
+
+        if (!someoneHeard
+                && plugin.getConfig().getBoolean(
+                "unheard-message.enabled",
+                true
+        )) {
+            Boolean channelEnabled = channel.getUnheardMessageEnabled();
+            boolean enabled = channelEnabled == null || channelEnabled;
+
+            if (enabled) {
+                String unheardMessage = channel.getUnheardMessage();
+
+                if (unheardMessage == null || unheardMessage.isEmpty()) {
+                    unheardMessage = plugin.getConfig().getString(
+                            "unheard-message.message",
+                            "<yellow>⚠ Вас никто не услышал.</yellow>"
+                    );
+                }
+
+                unheardMessage = unheardMessage
+                        .replace("%player%", sender.getName())
+                        .replace("%displayname%", sender.getDisplayName());
+
+                if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+                    unheardMessage = PlaceholderAPI.setPlaceholders(
+                            sender,
+                            unheardMessage
+                    );
+                }
+
+                Component notification = plugin.getChatFormatRenderer()
+                        .parseFormat(unheardMessage);
+
+                Bukkit.getScheduler().runTask(
+                        plugin,
+                        () -> sender.sendMessage(notification)
                 );
-
-        /*
-         * ========================================================
-         * VIEWERS
-         * ========================================================
-         *
-         * Здесь определяем, кто реально получает сообщение.
-         */
-
-        event.viewers().removeIf(
-                audience -> {
-
-                    if (!(audience instanceof Player)) {
-                        return false;
-                    }
-
-                    Player target =
-                            (Player) audience;
-
-                    return !plugin
-                            .getChatChannelRouter()
-                            .canReceiveMessage(
-                                    sender,
-                                    target,
-                                    channel
-                            );
-                }
-        );
-
-        /*
-         * ========================================================
-         * MENTION NOTIFICATIONS
-         * ========================================================
-         *
-         * ВАЖНО:
-         *
-         * Уведомления обрабатываем ТОЛЬКО ПОСЛЕ
-         * фильтрации viewers.
-         *
-         * Поэтому игрок, который не видит сообщение,
-         * не получит уведомление.
-         */
-
-        processMentionNotifications(
-                messageText,
-                sender,
-                event.viewers()
-        );
-
-        /*
-         * ========================================================
-         * UNHEARD MESSAGE
-         * ========================================================
-         */
-
-        boolean someoneHeard =
-                event.viewers()
-                        .stream()
-                        .filter(
-                                audience ->
-                                        audience
-                                                instanceof Player
-                        )
-                        .map(
-                                audience ->
-                                        (Player) audience
-                        )
-                        .anyMatch(
-                                player ->
-                                        !player.equals(sender)
-                        );
-
-        if (!someoneHeard) {
-
-            boolean globallyEnabled =
-                    plugin.getConfig().getBoolean(
-                            "unheard-message.enabled",
-                            true
-                    );
-
-            if (globallyEnabled) {
-
-                Boolean channelEnabled =
-                        channel.getUnheardMessageEnabled();
-
-                boolean enabled =
-                        channelEnabled == null
-                                || channelEnabled;
-
-                if (enabled) {
-
-                    String message =
-                            channel.getUnheardMessage();
-
-                    if (message == null
-                            || message.isEmpty()) {
-
-                        message =
-                                plugin.getConfig()
-                                        .getString(
-                                                "unheard-message.message",
-                                                "<yellow>⚠ Вас никто не услышал.</yellow>"
-                                        );
-                    }
-
-                    message =
-                            message.replace(
-                                    "%player%",
-                                    sender.getName()
-                            ).replace(
-                                    "%displayname%",
-                                    sender.getDisplayName()
-                            );
-
-                    /*
-                     * PlaceholderAPI.
-                     */
-
-                    if (Bukkit.getPluginManager()
-                            .isPluginEnabled(
-                                    "PlaceholderAPI"
-                            )) {
-
-                        message =
-                                PlaceholderAPI.setPlaceholders(
-                                        sender,
-                                        message
-                                );
-                    }
-
-                    Component notification =
-                            plugin.getChatFormatRenderer()
-                                    .parseFormat(
-                                            message
-                                    );
-
-                    Bukkit.getScheduler().runTask(
-                            plugin,
-                            () -> sender.sendMessage(
-                                    notification
-                            )
-                    );
-                }
             }
         }
 
-        /*
-         * ========================================================
-         * RENDERER
-         * ========================================================
-         */
-
-        Component result =
-                finalFormatted;
-
-        event.renderer(
-                (
-                        source,
-                        sourceDisplayName,
-                        messageComponent,
-                        viewer
-                ) -> result
-        );
+        Component result = finalFormatted;
+        event.renderer((source, sourceDisplayName, messageComponent, viewer) -> result);
     }
 }
