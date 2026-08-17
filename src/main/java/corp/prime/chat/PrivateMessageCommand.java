@@ -28,7 +28,7 @@ public class PrivateMessageCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sendMessage(sender, "commands.msg.messages.player-only", "<red>Эта команда доступна только игрокам.</red>");
+            sendMessage(sender, "commands.msg.messages.player-only", "<red>◆</red> <gray>Эта команда доступна только игрокам.</gray>");
             return true;
         }
 
@@ -41,29 +41,28 @@ public class PrivateMessageCommand implements CommandExecutor {
 
     private boolean handleMessage(Player sender, String[] args) {
         if (!plugin.getCommandConfig().getBoolean("commands.msg.enabled", true)) {
-            sendMessage(sender, "commands.msg.messages.disabled", "<red>Личные сообщения отключены.</red>");
+            sendMessage(sender, "commands.msg.messages.disabled", "<red>◆</red> <gray>Личные сообщения отключены.</gray>");
             return true;
         }
 
         if (!hasPermission(sender)) {
-            sendMessage(sender, "commands.msg.messages.no-permission", "<red>У вас нет прав для использования личных сообщений.</red>");
+            sendMessage(sender, "commands.msg.messages.no-permission", "<red>◆</red> <gray>У вас нет прав для использования личных сообщений.</gray>");
             return true;
         }
 
         if (args.length < 2) {
-            sendMessage(sender, "commands.msg.messages.usage", "<gray>Использование: <white>/msg <игрок> <сообщение></white></gray>");
+            sendMessage(sender, "commands.msg.messages.usage", "<red>◆</red> <gray>Использование: <white>/msg <игрок> <сообщение></white></gray>");
             return true;
         }
 
         Player target = findPlayer(args[0]);
-
         if (target == null) {
-            sendMessage(sender, "commands.msg.messages.player-not-found", "<red>Игрок <white>%player%</white> не найден или не в сети.</red>", args[0], sender);
+            sendMessage(sender, "commands.msg.messages.player-not-found", "<red>◆</red> <gray>Игрок <white>%player%</white> не найден или не в сети.</gray>", args[0], sender);
             return true;
         }
 
         if (target.equals(sender)) {
-            sendMessage(sender, "commands.msg.messages.self", "<yellow>Вы не можете отправить сообщение самому себе.</yellow>");
+            sendMessage(sender, "commands.msg.messages.self", "<red>◆</red> <gray>Нельзя отправить сообщение самому себе.</gray>");
             return true;
         }
 
@@ -73,29 +72,29 @@ public class PrivateMessageCommand implements CommandExecutor {
 
     private boolean handleReply(Player sender, String[] args) {
         if (!plugin.getCommandConfig().getBoolean("commands.r.enabled", true)) {
-            sendMessage(sender, "commands.r.messages.disabled", "<red>Ответы на личные сообщения отключены.</red>");
+            sendMessage(sender, "commands.r.messages.disabled", "<red>◆</red> <gray>Ответы на личные сообщения отключены.</gray>");
             return true;
         }
 
         if (!hasPermission(sender)) {
-            sendMessage(sender, "commands.r.messages.no-permission", "<red>У вас нет прав для использования личных сообщений.</red>");
+            sendMessage(sender, "commands.r.messages.no-permission", "<red>◆</red> <gray>У вас нет прав для использования личных сообщений.</gray>");
             return true;
         }
 
         if (args.length == 0) {
-            sendMessage(sender, "commands.r.messages.usage", "<gray>Использование: <white>/r <сообщение></white></gray>");
+            sendMessage(sender, "commands.r.messages.usage", "<red>◆</red> <gray>Использование: <white>/r <сообщение></white></gray>");
             return true;
         }
 
         UUID targetId = lastReply.get(sender.getUniqueId());
         if (targetId == null) {
-            sendMessage(sender, "commands.r.messages.no-target", "<yellow>У вас нет собеседника для ответа.</yellow>");
+            sendMessage(sender, "commands.r.messages.no-target", "<red>◆</red> <gray>Нет собеседника для ответа.</gray>");
             return true;
         }
 
         Player target = Bukkit.getPlayer(targetId);
         if (target == null) {
-            sendMessage(sender, "commands.r.messages.target-offline", "<yellow>Ваш последний собеседник сейчас не в сети.</yellow>");
+            sendMessage(sender, "commands.r.messages.target-offline", "<red>◆</red> <gray>Собеседник сейчас не в сети.</gray>");
             return true;
         }
 
@@ -110,6 +109,16 @@ public class PrivateMessageCommand implements CommandExecutor {
         sendFormatted("commands.msg.messages.format.outgoing", sender, sender, target, message);
         sendFormatted("commands.msg.messages.format.incoming", target, sender, target, message);
         plugin.getSpyManager().notifyPrivateMessage(sender, target, message);
+
+        if (plugin.getAfkManager().isAfk(target)) {
+            sendMessage(
+                    sender,
+                    "commands.afk.messages.sender-notice",
+                    "<yellow>◆</yellow> <gray>Сообщение отправлено. Игрок <white>%player%</white> сейчас AFK.</gray>",
+                    target.getName(),
+                    target
+            );
+        }
     }
 
     private void sendFormatted(String path, Player recipient, Player sender, Player target, String message) {
@@ -117,22 +126,14 @@ public class PrivateMessageCommand implements CommandExecutor {
 
         if (lines.isEmpty()) {
             lines = List.of(
-                    path.endsWith("outgoing")
-                            ? "<gray>Вы → <white>%recipient%</white></gray>"
-                            : "<gray>От <white>%sender%</white></gray>",
+                    path.endsWith("outgoing") ? "<gray>Вы → <white>%recipient%</white></gray>" : "<gray>От <white>%sender%</white></gray>",
                     "<white>%message%</white>"
             );
         }
 
         boolean incoming = path.endsWith("incoming");
-        boolean clickable = incoming && plugin.getCommandConfig().getBoolean(
-                "commands.msg.notifications.click.enabled",
-                true
-        );
-        String hoverText = plugin.getCommandConfig().getString(
-                "commands.msg.notifications.click.hover",
-                "<yellow>Нажмите, чтобы ответить</yellow>"
-        );
+        boolean clickable = incoming && plugin.getCommandConfig().getBoolean("commands.msg.notifications.click.enabled", true);
+        String hoverText = plugin.getCommandConfig().getString("commands.msg.notifications.click.hover", "<yellow>Нажмите, чтобы ответить</yellow>");
 
         for (String line : lines) {
             String formatted = line
@@ -150,40 +151,25 @@ public class PrivateMessageCommand implements CommandExecutor {
 
             if (clickable) {
                 component = component.clickEvent(ClickEvent.suggestCommand("/r "));
-
                 if (hoverText != null && !hoverText.isEmpty()) {
-                    component = component.hoverEvent(
-                            HoverEvent.showText(
-                                    plugin.getChatFormatRenderer().parseFormat(hoverText)
-                            )
-                    );
+                    component = component.hoverEvent(HoverEvent.showText(
+                            plugin.getChatFormatRenderer().parseFormat(hoverText)
+                    ));
                 }
             }
 
             recipient.sendMessage(component);
         }
 
-        if (incoming && plugin.getCommandConfig().getBoolean(
-                "commands.msg.notifications.sound.enabled",
-                true
-        )) {
+        if (incoming && plugin.getCommandConfig().getBoolean("commands.msg.notifications.sound.enabled", true)) {
             playNotificationSound(recipient);
         }
     }
 
     private void playNotificationSound(Player player) {
-        String soundName = plugin.getCommandConfig().getString(
-                "commands.msg.notifications.sound.name",
-                "ENTITY_EXPERIENCE_ORB_PICKUP"
-        );
-        float volume = (float) plugin.getCommandConfig().getDouble(
-                "commands.msg.notifications.sound.volume",
-                1.0
-        );
-        float pitch = (float) plugin.getCommandConfig().getDouble(
-                "commands.msg.notifications.sound.pitch",
-                1.0
-        );
+        String soundName = plugin.getCommandConfig().getString("commands.msg.notifications.sound.name", "ENTITY_EXPERIENCE_ORB_PICKUP");
+        float volume = (float) plugin.getCommandConfig().getDouble("commands.msg.notifications.sound.volume", 1.0);
+        float pitch = (float) plugin.getCommandConfig().getDouble("commands.msg.notifications.sound.pitch", 1.0);
 
         try {
             Sound sound = Sound.valueOf(soundName.toUpperCase(Locale.ROOT));
