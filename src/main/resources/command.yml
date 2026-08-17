@@ -44,9 +44,34 @@ commands:
       no-target: "<gradient:#FFB347:#7C4DFF>◆</gradient> <gray>У вас пока нет собеседника для ответа.</gray>"
       target-offline: "<gradient:#FFB347:#7C4DFF>◆</gradient> <gray>Ваш последний собеседник сейчас не в сети.</gray>"
 
-# %sender% — ник отправителя
+  socialspy:
+    enabled: true
+    permission: "primechat.socialspy"
+
+    messages:
+      player-only: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Эта команда доступна только игрокам.</gray>"
+      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>У вас нет прав для использования SocialSpy.</gray>"
+      enabled: "<gradient:#00E5FF:#7C4DFF>◆ SOCIALSPY</gradient> <gray>Наблюдение за личными сообщениями <#55FFAA>включено</#55FFAA>.</gray>"
+      disabled: "<gradient:#FF4D6D:#7C4DFF>◆ SOCIALSPY</gradient> <gray>Наблюдение за личными сообщениями <#FF5577>выключено</#FF5577>.</gray>"
+
+    format: "<gradient:#00E5FF:#7C4DFF>◆ SOCIALSPY</gradient> <gray>%sender% <dark_gray>→</dark_gray> %recipient%:</gray> <white>%message%</white>"
+
+  commandspy:
+    enabled: true
+    permission: "primechat.commandspy"
+
+    messages:
+      player-only: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Эта команда доступна только игрокам.</gray>"
+      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>У вас нет прав для использования CommandSpy.</gray>"
+      enabled: "<gradient:#00E5FF:#7C4DFF>◆ COMMANDSPY</gradient> <gray>Наблюдение за командами <#55FFAA>включено</#55FFAA>.</gray>"
+      disabled: "<gradient:#FF4D6D:#7C4DFF>◆ COMMANDSPY</gradient> <gray>Наблюдение за командами <#FF5577>выключено</#FF5577>.</gray>"
+
+    format: "<gradient:#00E5FF:#7C4DFF>◆ COMMANDSPY</gradient> <gray>%player% <dark_gray>→</dark_gray></gray> <white>%command%</white>"
+
+# %sender% — ник отправителя личного сообщения
 # %sender_displayname% — Display Name отправителя
 # %recipient% — ник получателя
 # %recipient_displayname% — Display Name получателя
-# %message% — текст сообщения
-# %player% — ник игрока в сообщениях об ошибках
+# %message% — текст личного сообщения
+# %player% — ник игрока, использовавшего команду
+# %command% — полная введённая команда
