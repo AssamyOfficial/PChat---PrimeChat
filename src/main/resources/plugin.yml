@@ -13,6 +13,9 @@ commands:
   primechat:
     description: Управление PrimeChat
     usage: /primechat <help|reload|version>
+    aliases:
+      - pchat
+      - pc
     permission: primechat.admin
   ac:
     description: Админский чат
