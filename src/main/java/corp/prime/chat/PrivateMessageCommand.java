@@ -2,7 +2,10 @@ package corp.prime.chat;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,6 +13,7 @@ import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -119,6 +123,16 @@ public class PrivateMessageCommand implements CommandExecutor {
             );
         }
 
+        boolean incoming = path.endsWith("incoming");
+        boolean clickable = incoming && plugin.getCommandConfig().getBoolean(
+                "commands.msg.notifications.click.enabled",
+                true
+        );
+        String hoverText = plugin.getCommandConfig().getString(
+                "commands.msg.notifications.click.hover",
+                "<yellow>Нажмите, чтобы ответить</yellow>"
+        );
+
         for (String line : lines) {
             String formatted = line
                     .replace("%sender%", sender.getName())
@@ -132,7 +146,48 @@ public class PrivateMessageCommand implements CommandExecutor {
             }
 
             Component component = plugin.getChatFormatRenderer().parseFormat(formatted);
+
+            if (clickable) {
+                component = component.clickEvent(ClickEvent.suggestCommand("/r "));
+
+                if (hoverText != null && !hoverText.isEmpty()) {
+                    component = component.hoverEvent(
+                            HoverEvent.showText(
+                                    plugin.getChatFormatRenderer().parseFormat(hoverText)
+                            )
+                    );
+                }
+            }
+
             recipient.sendMessage(component);
+        }
+
+        if (incoming && plugin.getCommandConfig().getBoolean(
+                "commands.msg.notifications.sound.enabled",
+                true
+        )) {
+            playNotificationSound(recipient);
+        }
+    }
+
+    private void playNotificationSound(Player player) {
+        String soundName = plugin.getCommandConfig().getString(
+                "commands.msg.notifications.sound.name",
+                "ENTITY_EXPERIENCE_ORB_PICKUP"
+        );
+        float volume = (float) plugin.getCommandConfig().getDouble(
+                "commands.msg.notifications.sound.volume",
+                1.0
+        );
+        float pitch = (float) plugin.getCommandConfig().getDouble(
+                "commands.msg.notifications.sound.pitch",
+                1.0
+        );
+
+        try {
+            Sound sound = Sound.valueOf(soundName.toUpperCase(Locale.ROOT));
+            player.playSound(player.getLocation(), sound, volume, pitch);
+        } catch (IllegalArgumentException ignored) {
         }
     }
 
