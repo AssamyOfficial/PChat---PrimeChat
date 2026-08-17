@@ -1,10 +1,35 @@
+<div align="center">
+  <img src="docs/01-cover.svg" alt="PrimeChat 1.3 cover">
+</div>
+
 # PrimeChat 1.3.0
 
-![PrimeChat](docs/primechat-overview.svg)
+<div align="center">
+  <strong>Современная система чата для Paper</strong><br>
+  Каналы • Личные сообщения • Упоминания • AFK • Spy • Контроль команд
+</div>
 
-PrimeChat — современная и гибкая система чатов для Paper 1.21.x. Плагин объединяет локальный и глобальный чат, собственные каналы, личные сообщения, упоминания, AFK, SocialSpy, CommandSpy, контроль команд и удобную настройку через YAML.
+## Документация
 
-![Возможности](docs/primechat-features.svg)
+Ниже — визуальная часть документации PrimeChat. Все страницы выполнены в едином стиле и служат быстрым обзором возможностей плагина. Под ними находится подробная техническая документация и рабочие примеры.
+
+<div align="center">
+  <img src="docs/02-features.svg" alt="PrimeChat features">
+  <br><br>
+  <img src="docs/03-commands.svg" alt="PrimeChat commands">
+  <br><br>
+  <img src="docs/04-settings.svg" alt="PrimeChat settings and permissions">
+  <br><br>
+  <img src="docs/05-installation.svg" alt="PrimeChat installation and support">
+</div>
+
+---
+
+## О плагине
+
+PrimeChat — современный, гибкий и производительный чат-плагин для Paper. Он объединяет локальный и глобальный чат, собственные каналы, личные сообщения, упоминания, AFK, SocialSpy, CommandSpy, контроль команд, очистку чата и удобную настройку через YAML.
+
+Плагин рассчитан на серверы, которым нужна полноценная система общения без необходимости собирать десятки небольших плагинов.
 
 ## Возможности
 
@@ -41,8 +66,6 @@ PrimeChat — современная и гибкая система чатов �
 - Необязательная интеграция с PlaceholderAPI.
 - Перезагрузка конфигурации без перезапуска сервера.
 
-![Команды](docs/primechat-commands.svg)
-
 ## Требования
 
 - Paper 1.21.x.
@@ -63,8 +86,6 @@ PrimeChat — современная и гибкая система чатов �
 plugins/PrimeChat/config.yml
 plugins/PrimeChat/command.yml
 ```
-
-![Настройка](docs/primechat-config.svg)
 
 ## Конфигурация
 
@@ -373,10 +394,11 @@ PrimeChat/
 │   ├── command.yml
 │   └── plugin.yml
 ├── docs/
-│   ├── primechat-overview.svg
-│   ├── primechat-features.svg
-│   ├── primechat-commands.svg
-│   └── primechat-config.svg
+│   ├── 01-cover.svg
+│   ├── 02-features.svg
+│   ├── 03-commands.svg
+│   ├── 04-settings.svg
+│   └── 05-installation.svg
 ├── pom.xml
 ├── LICENSE
 └── README.md
