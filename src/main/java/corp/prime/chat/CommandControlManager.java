@@ -27,7 +27,9 @@ public class CommandControlManager implements Listener {
         Player player = event.getPlayer();
         String raw = event.getMessage();
         String command = raw.substring(1).split(" ")[0].toLowerCase();
+        String bypass = plugin.getCommandConfig().getString("commands.command-control.bypass-permission", "primechat.commandcontrol.bypass");
 
+        if (!bypass.isEmpty() && player.hasPermission(bypass)) return;
         if (delayedExecution.remove(player.getUniqueId())) return;
 
         if (plugin.getCommandConfig().getBoolean("commands.command-control.whitelist-enabled", false)
@@ -53,8 +55,8 @@ public class CommandControlManager implements Listener {
             seconds = plugin.getCommandConfig().getLong(path + ".reduced-seconds", seconds);
         }
 
-        String bypass = plugin.getCommandConfig().getString(path + ".bypass-permission", "");
-        if (!bypass.isEmpty() && player.hasPermission(bypass)) return;
+        String commandBypass = plugin.getCommandConfig().getString(path + ".bypass-permission", "");
+        if (!commandBypass.isEmpty() && player.hasPermission(commandBypass)) return;
         if (seconds <= 0) return;
 
         long now = System.currentTimeMillis();
@@ -73,11 +75,10 @@ public class CommandControlManager implements Listener {
         if (plugin.getCommandConfig().getBoolean(path + ".delay-execution", false)) {
             event.setCancelled(true);
             delayedExecution.add(player.getUniqueId());
-            long ticks = seconds * 20L;
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (player.isOnline()) player.performCommand(raw.substring(1));
                 delayedExecution.remove(player.getUniqueId());
-            }, ticks);
+            }, seconds * 20L);
         }
     }
 
