@@ -7,16 +7,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public class CommandControlManager implements Listener {
     private final PrimeChat plugin;
     private final Map<UUID, Map<String, Long>> cooldowns = new HashMap<>();
-    private final Set<UUID> delayedExecution = new HashSet<>();
+    private final Map<UUID, Map<String, Long>> delayedExecutions = new HashMap<>();
 
     public CommandControlManager(PrimeChat plugin) {
         this.plugin = plugin;
@@ -26,75 +24,134 @@ public class CommandControlManager implements Listener {
     public void onCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
         String raw = event.getMessage();
-        String command = raw.substring(1).split(" ")[0].toLowerCase();
-        String bypass = plugin.getCommandConfig().getString("commands.command-control.bypass-permission", "primechat.commandcontrol.bypass");
 
-        if (!bypass.isEmpty() && player.hasPermission(bypass)) return;
-        if (delayedExecution.remove(player.getUniqueId())) return;
-
-        if (plugin.getCommandConfig().getBoolean("commands.command-control.whitelist-enabled", false)
-                && !isListed("commands.command-control.whitelist", command)) {
-            event.setCancelled(true);
-            send(player, "commands.command-control.messages.not-whitelisted", "<red>Эта команда не разрешена.</red>");
+        if (raw.length() <= 1 || !raw.startsWith("/")) {
             return;
         }
 
-        if (plugin.getCommandConfig().getBoolean("commands.command-control.blacklist-enabled", false)
+        String command = raw.substring(1).split(" ")[0].toLowerCase();
+        String bypass = plugin.getCommandConfig().getString(
+                "commands.command-control.bypass-permission",
+                "primechat.commandcontrol.bypass"
+        );
+
+        if (!bypass.isEmpty() && player.hasPermission(bypass)) {
+            return;
+        }
+
+        if (isListed("commands.command-control.whitelist", command)
+                && plugin.getCommandConfig().getBoolean(
+                "commands.command-control.whitelist-enabled", false)) {
+            return;
+        }
+
+        if (plugin.getCommandConfig().getBoolean(
+                "commands.command-control.whitelist-enabled", false)) {
+            event.setCancelled(true);
+            send(player,
+                    "commands.command-control.messages.not-whitelisted",
+                    "<red>Эта команда не разрешена.</red>",
+                    null
+            );
+            return;
+        }
+
+        if (plugin.getCommandConfig().getBoolean(
+                "commands.command-control.blacklist-enabled", false)
                 && isListed("commands.command-control.blacklist", command)) {
             event.setCancelled(true);
-            send(player, "commands.command-control.messages.blacklisted", "<red>Эта команда запрещена.</red>");
+            send(player,
+                    "commands.command-control.messages.blacklisted",
+                    "<red>Эта команда запрещена.</red>",
+                    null
+            );
             return;
         }
 
-        String path = "commands.command-control.delays." + command;
-        if (!plugin.getCommandConfig().getBoolean(path + ".enabled", false)) return;
+        long seconds = plugin.getCommandConfig().getLong(
+                "commands.command-control.delays." + command,
+                0L
+        );
 
-        long seconds = plugin.getCommandConfig().getLong(path + ".seconds", 0L);
-        String reducedPermission = plugin.getCommandConfig().getString(path + ".reduced-permission", "");
-        if (!reducedPermission.isEmpty() && player.hasPermission(reducedPermission)) {
-            seconds = plugin.getCommandConfig().getLong(path + ".reduced-seconds", seconds);
+        if (seconds <= 0) {
+            return;
         }
 
-        String commandBypass = plugin.getCommandConfig().getString(path + ".bypass-permission", "");
-        if (!commandBypass.isEmpty() && player.hasPermission(commandBypass)) return;
-        if (seconds <= 0) return;
+        String delayBypass = plugin.getCommandConfig().getString(
+                "commands.command-control.delay-permissions.bypass",
+                "primechat.commanddelay.bypass"
+        );
 
+        if (!delayBypass.isEmpty() && player.hasPermission(delayBypass)) {
+            return;
+        }
+
+        String reducePermission = plugin.getCommandConfig().getString(
+                "commands.command-control.delay-permissions.reduce",
+                "primechat.commanddelay.reduce"
+        );
+
+        if (!reducePermission.isEmpty() && player.hasPermission(reducePermission)) {
+            seconds = plugin.getCommandConfig().getLong(
+                    "commands.command-control.delay-permissions.reduced-seconds",
+                    seconds
+            );
+        }
+
+        if (seconds <= 0) {
+            return;
+        }
+
+        UUID uuid = player.getUniqueId();
         long now = System.currentTimeMillis();
-        Map<String, Long> playerCooldowns = cooldowns.computeIfAbsent(player.getUniqueId(), key -> new HashMap<>());
+        Map<String, Long> playerCooldowns = cooldowns.computeIfAbsent(uuid, key -> new HashMap<>());
         long until = playerCooldowns.getOrDefault(command, 0L);
 
         if (until > now) {
             long left = Math.max(1, (until - now + 999) / 1000);
             event.setCancelled(true);
-            send(player, "commands.command-control.messages.cooldown", "<yellow>Подождите <white>%seconds%</white> сек.</yellow>".replace("%seconds%", String.valueOf(left)));
+            send(player,
+                    "commands.command-control.messages.cooldown",
+                    "<yellow>Подождите <white>%seconds%</white> сек.</yellow>",
+                    String.valueOf(left)
+            );
             return;
         }
 
         playerCooldowns.put(command, now + seconds * 1000L);
-
-        if (plugin.getCommandConfig().getBoolean(path + ".delay-execution", false)) {
-            event.setCancelled(true);
-            delayedExecution.add(player.getUniqueId());
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (player.isOnline()) player.performCommand(raw.substring(1));
-                delayedExecution.remove(player.getUniqueId());
-            }, seconds * 20L);
-        }
     }
 
     private boolean isListed(String path, String command) {
         List<String> list = plugin.getCommandConfig().getStringList(path);
+
         for (String entry : list) {
-            if (entry == null) continue;
+            if (entry == null) {
+                continue;
+            }
+
             String value = entry.trim().toLowerCase();
-            if (value.startsWith("/")) value = value.substring(1);
-            if (value.equals(command)) return true;
+
+            if (value.startsWith("/")) {
+                value = value.substring(1);
+            }
+
+            if (value.equals(command)) {
+                return true;
+            }
         }
+
         return false;
     }
 
-    private void send(Player player, String path, String fallback) {
+    private void send(Player player, String path, String fallback, String seconds) {
         String message = plugin.getCommandConfig().getString(path, fallback);
-        player.sendMessage(plugin.getChatFormatRenderer().parseFormat(message));
+
+        if (seconds != null) {
+            message = message.replace("%seconds%", seconds);
+        }
+
+        player.sendMessage(
+                plugin.getChatFormatRenderer().parseFormat(message)
+        );
     }
 }
