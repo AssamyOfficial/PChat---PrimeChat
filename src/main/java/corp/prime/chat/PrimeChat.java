@@ -27,8 +27,10 @@ public final class PrimeChat extends JavaPlugin {
 
         getCommand("primechat").setExecutor(new PrimeChatCommand(this));
         getCommand("primechat").setTabCompleter(new PrimeChatTabCompleter());
-        getCommand("msg").setExecutor(new PrivateMessageCommand(this));
-        getCommand("r").setExecutor(new PrivateMessageCommand(this));
+
+        PrivateMessageCommand privateMessageCommand = new PrivateMessageCommand(this);
+        getCommand("msg").setExecutor(privateMessageCommand);
+        getCommand("r").setExecutor(privateMessageCommand);
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().info("PlaceholderAPI найден. Интеграция активирована.");
