@@ -14,57 +14,64 @@ commands:
     description: Управление PrimeChat
     usage: /primechat <help|reload|version>
     permission: primechat.admin
-
   ac:
     description: Админский чат
     usage: /ac <сообщение>
     aliases:
       - adminchat
-
   msg:
     description: Личное сообщение игроку
     usage: /msg <игрок> <сообщение>
     aliases:
       - m
       - message
-
   r:
     description: Ответить на последнее личное сообщение
     usage: /r <сообщение>
     aliases:
       - reply
-
   socialspy:
     description: Просмотр личных сообщений
     usage: /socialspy
     aliases:
       - ss
     permission: primechat.socialspy
-
   commandspy:
     description: Просмотр команд игроков
     usage: /commandspy
     aliases:
       - cs
     permission: primechat.commandspy
+  clearchat:
+    description: Очистить чат
+    usage: /clearchat
+    aliases:
+      - cc
+    permission: primechat.clearchat
+  afk:
+    description: Статус AFK
+    usage: /afk
+    permission: primechat.afk
 
 permissions:
   primechat.admin:
     description: Административные команды PrimeChat
     default: op
-
   primechat.chatcolor:
     description: Позволяет использовать цвета и форматирование в чате
     default: false
-
   primechat.msg:
     description: Позволяет использовать личные сообщения
     default: true
-
   primechat.socialspy:
     description: Позволяет включать SocialSpy
     default: op
-
   primechat.commandspy:
     description: Позволяет включать CommandSpy
     default: op
+  primechat.clearchat:
+    description: Позволяет очищать чат
+    default: op
+  primechat.afk:
+    description: Позволяет использовать AFK
+    default: true
