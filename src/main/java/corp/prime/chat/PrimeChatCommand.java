@@ -22,15 +22,14 @@ public class PrimeChatCommand implements CommandExecutor {
         }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-            plugin.reloadConfig();
-            plugin.getChatChannelManager().loadChannels();
-            sender.sendMessage("§aPrimeChat: конфигурация и чат-каналы перезагружены!");
+            plugin.reloadPrimeChat();
+            sender.sendMessage("§aPrimeChat: конфигурация, каналы и команды перезагружены!");
             return true;
         }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("version")) {
             sender.sendMessage("§b§lPrimeChat");
-            sender.sendMessage("§7Версия: §f1.2.0");
+            sender.sendMessage("§7Версия: §f1.3.0");
             sender.sendMessage("§7Разработчик: §fPrimeDev");
             return true;
         }
