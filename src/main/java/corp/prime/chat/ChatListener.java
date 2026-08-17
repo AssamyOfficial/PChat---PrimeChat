@@ -8,6 +8,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,12 +16,12 @@ import org.bukkit.event.Listener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ChatListener implements Listener {
-
     private final PrimeChat plugin;
 
     public ChatListener(PrimeChat plugin) {
@@ -31,8 +32,7 @@ public class ChatListener implements Listener {
         Set<String> mentions = new HashSet<>();
 
         if (!plugin.getConfig().getBoolean("mentions.enabled", true)
-                || message == null
-                || message.isEmpty()) {
+                || message == null || message.isEmpty()) {
             return mentions;
         }
 
@@ -46,9 +46,9 @@ public class ChatListener implements Listener {
         ).matcher(message);
 
         while (matcher.find()) {
-            String playerName = matcher.group(1);
-            if (playerName != null && !playerName.isEmpty()) {
-                mentions.add(playerName);
+            String name = matcher.group(1);
+            if (name != null && !name.isEmpty()) {
+                mentions.add(name);
             }
         }
 
@@ -61,7 +61,7 @@ public class ChatListener implements Listener {
         }
 
         String symbol = plugin.getConfig().getString("mentions.symbol", "@");
-        String color = plugin.getConfig().getString("mentions.color", "<aqua>");
+        String color = plugin.getConfig().getString("mentions.color", "<#00E5FF>");
         boolean clickable = plugin.getConfig().getBoolean("mentions.clickable", true);
         boolean hoverEnabled = plugin.getConfig().getBoolean("mentions.hover", true);
 
@@ -70,17 +70,13 @@ public class ChatListener implements Listener {
         }
 
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
-        onlinePlayers.sort((first, second) -> Integer.compare(
-                second.getName().length(),
-                first.getName().length()
-        ));
+        onlinePlayers.sort((a, b) -> Integer.compare(b.getName().length(), a.getName().length()));
 
         Component result = message;
 
         for (Player player : onlinePlayers) {
             String mention = symbol + player.getName();
-            Component mentionComponent = plugin.getChatFormatRenderer()
-                    .parseFormat(color + mention);
+            Component mentionComponent = plugin.getChatFormatRenderer().parseFormat(color + mention);
 
             if (hoverEnabled) {
                 Component hover = Component.text()
@@ -91,10 +87,7 @@ public class ChatListener implements Listener {
                         .append(Component.newline())
                         .append(Component.text("Нажмите, чтобы написать сообщение"))
                         .build();
-
-                mentionComponent = mentionComponent.hoverEvent(
-                        HoverEvent.showText(hover)
-                );
+                mentionComponent = mentionComponent.hoverEvent(HoverEvent.showText(hover));
             }
 
             if (clickable) {
@@ -117,19 +110,11 @@ public class ChatListener implements Listener {
             Player sender,
             Set<net.kyori.adventure.audience.Audience> viewers
     ) {
-        if (!plugin.getConfig().getBoolean(
-                "mentions.notification.enabled",
-                true
-        )) {
+        if (!plugin.getConfig().getBoolean("mentions.notification.enabled", true)) {
             return;
         }
 
-        Set<String> mentionedNames = findMentionedPlayers(message);
-        if (mentionedNames.isEmpty()) {
-            return;
-        }
-
-        for (String mentionedName : mentionedNames) {
+        for (String mentionedName : findMentionedPlayers(message)) {
             Player onlinePlayer = null;
 
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -143,26 +128,24 @@ public class ChatListener implements Listener {
                 if (onlinePlayer.equals(sender) || !viewers.contains(onlinePlayer)) {
                     continue;
                 }
-
                 sendMentionNotification(onlinePlayer, sender);
                 continue;
             }
 
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(mentionedName);
-
             if (offlinePlayer.hasPlayedBefore()) {
                 sendMentionStatusNotification(
                         sender,
                         mentionedName,
                         "mentions.notification.offline",
-                        "<yellow>⚠ Игрок <white>%player%</white> сейчас не в сети.</yellow>"
+                        "<yellow>⚠</yellow> <gray>Игрок <white>%player%</white> сейчас не в сети.</gray>"
                 );
             } else {
                 sendMentionStatusNotification(
                         sender,
                         mentionedName,
                         "mentions.notification.not-found",
-                        "<red>⚠ Игрок <white>%player%</white> не найден.</red>"
+                        "<red>⚠</red> <gray>Игрок <white>%player%</white> не найден.</gray>"
                 );
             }
         }
@@ -170,16 +153,13 @@ public class ChatListener implements Listener {
 
     private void sendMentionNotification(Player mentionedPlayer, Player sender) {
         if (mentionedPlayer.equals(sender)
-                || !plugin.getConfig().getBoolean(
-                "mentions.notification.enabled",
-                true
-        )) {
+                || !plugin.getConfig().getBoolean("mentions.notification.enabled", true)) {
             return;
         }
 
         String message = plugin.getConfig().getString(
                 "mentions.notification.message",
-                "<yellow>🔔 <white>%player%</white> упомянул вас в чате.</yellow>"
+                "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>%player% упомянул Вас в чате.</gray>"
         );
 
         if (message == null || message.isEmpty()) {
@@ -196,10 +176,39 @@ public class ChatListener implements Listener {
         }
 
         Component notification = plugin.getChatFormatRenderer().parseFormat(message);
-        Bukkit.getScheduler().runTask(
-                plugin,
-                () -> mentionedPlayer.sendMessage(notification)
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            mentionedPlayer.sendMessage(notification);
+            playMentionSound(mentionedPlayer);
+        });
+    }
+
+    private void playMentionSound(Player player) {
+        if (!plugin.getConfig().getBoolean("mentions.notification.sound.enabled", true)) {
+            return;
+        }
+
+        String name = plugin.getConfig().getString(
+                "mentions.notification.sound.name",
+                "ENTITY_EXPERIENCE_ORB_PICKUP"
         );
+        float volume = (float) plugin.getConfig().getDouble(
+                "mentions.notification.sound.volume",
+                1.0
+        );
+        float pitch = (float) plugin.getConfig().getDouble(
+                "mentions.notification.sound.pitch",
+                1.0
+        );
+
+        try {
+            player.playSound(
+                    player.getLocation(),
+                    Sound.valueOf(name.toUpperCase(Locale.ROOT)),
+                    volume,
+                    pitch
+            );
+        } catch (IllegalArgumentException ignored) {
+        }
     }
 
     private void sendMentionStatusNotification(
@@ -209,7 +218,6 @@ public class ChatListener implements Listener {
             String defaultMessage
     ) {
         String message = plugin.getConfig().getString(configPath, defaultMessage);
-
         if (message == null || message.isEmpty()) {
             return;
         }
@@ -224,45 +232,32 @@ public class ChatListener implements Listener {
         }
 
         Component notification = plugin.getChatFormatRenderer().parseFormat(message);
-        Bukkit.getScheduler().runTask(
-                plugin,
-                () -> sender.sendMessage(notification)
-        );
+        Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(notification));
     }
 
     @EventHandler
     public void onChat(AsyncChatEvent event) {
         Player sender = event.getPlayer();
-        String messageText = PlainTextComponentSerializer.plainText()
-                .serialize(event.message());
+        String messageText = PlainTextComponentSerializer.plainText().serialize(event.message());
 
-        ChatChannel channel = plugin.getChatChannelRouter()
-                .getChannelForMessage(sender, messageText);
-
+        ChatChannel channel = plugin.getChatChannelRouter().getChannelForMessage(sender, messageText);
         if (channel == null) {
             event.setCancelled(true);
             return;
         }
 
         String permission = channel.getPermission();
-        if (permission != null
-                && !permission.isEmpty()
-                && !sender.hasPermission(permission)) {
+        if (permission != null && !permission.isEmpty() && !sender.hasPermission(permission)) {
             event.setCancelled(true);
-            Bukkit.getScheduler().runTask(
-                    plugin,
-                    () -> sender.sendMessage(
-                            plugin.getChatFormatRenderer().parseFormat(
-                                    "<red>У вас нет прав для использования этого чата.</red>"
-                            )
+            Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(
+                    plugin.getChatFormatRenderer().parseFormat(
+                            "<red>◆</red> <gray>У вас нет прав для использования этого чата.</gray>"
                     )
-            );
+            ));
             return;
         }
 
-        String processedMessage = plugin.getChatChannelRouter()
-                .removeTrigger(channel, messageText);
-
+        String processedMessage = plugin.getChatChannelRouter().removeTrigger(channel, messageText);
         if (processedMessage.trim().isEmpty()) {
             event.setCancelled(true);
             return;
@@ -270,20 +265,12 @@ public class ChatListener implements Listener {
 
         Component finalFormatted = plugin.getChatFormatRenderer()
                 .render(sender, channel, processedMessage, event.message());
-
         finalFormatted = processMentions(finalFormatted);
 
-        event.viewers().removeIf(audience -> {
-            if (!(audience instanceof Player)) {
-                return false;
-            }
-
-            return !plugin.getChatChannelRouter().canReceiveMessage(
-                    sender,
-                    (Player) audience,
-                    channel
-            );
-        });
+        event.viewers().removeIf(audience -> audience instanceof Player
+                && !plugin.getChatChannelRouter().canReceiveMessage(
+                sender, (Player) audience, channel
+        ));
 
         processMentionNotifications(messageText, sender, event.viewers());
 
@@ -292,21 +279,16 @@ public class ChatListener implements Listener {
                 .map(audience -> (Player) audience)
                 .anyMatch(player -> !player.equals(sender));
 
-        if (!someoneHeard
-                && plugin.getConfig().getBoolean(
-                "unheard-message.enabled",
-                true
-        )) {
+        if (!someoneHeard && plugin.getConfig().getBoolean("unheard-message.enabled", true)) {
             Boolean channelEnabled = channel.getUnheardMessageEnabled();
             boolean enabled = channelEnabled == null || channelEnabled;
 
             if (enabled) {
                 String unheardMessage = channel.getUnheardMessage();
-
                 if (unheardMessage == null || unheardMessage.isEmpty()) {
                     unheardMessage = plugin.getConfig().getString(
                             "unheard-message.message",
-                            "<yellow>⚠ Вас никто не услышал.</yellow>"
+                            "<red>⚠</red> <gray>Вас никто не услышал.</gray>"
                     );
                 }
 
@@ -315,19 +297,11 @@ public class ChatListener implements Listener {
                         .replace("%displayname%", sender.getDisplayName());
 
                 if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                    unheardMessage = PlaceholderAPI.setPlaceholders(
-                            sender,
-                            unheardMessage
-                    );
+                    unheardMessage = PlaceholderAPI.setPlaceholders(sender, unheardMessage);
                 }
 
-                Component notification = plugin.getChatFormatRenderer()
-                        .parseFormat(unheardMessage);
-
-                Bukkit.getScheduler().runTask(
-                        plugin,
-                        () -> sender.sendMessage(notification)
-                );
+                Component notification = plugin.getChatFormatRenderer().parseFormat(unheardMessage);
+                Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(notification));
             }
         }
 
