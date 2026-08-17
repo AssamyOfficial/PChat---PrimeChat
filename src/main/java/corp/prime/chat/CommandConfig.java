@@ -3,7 +3,6 @@ package corp.prime.chat;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 public class CommandConfig {
@@ -35,6 +34,10 @@ public class CommandConfig {
 
     public String getString(String path, String def) {
         return config.getString(path, def);
+    }
+
+    public double getDouble(String path, double def) {
+        return config.getDouble(path, def);
     }
 
     public List<String> getStringList(String path) {
