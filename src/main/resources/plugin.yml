@@ -75,3 +75,12 @@ permissions:
   primechat.afk:
     description: Позволяет использовать AFK
     default: true
+  primechat.commandcontrol.bypass:
+    description: Обход ограничений команд
+    default: op
+  primechat.commanddelay.reduce:
+    description: Уменьшает задержку команд
+    default: false
+  primechat.commanddelay.bypass:
+    description: Полностью отключает задержку команд
+    default: op
