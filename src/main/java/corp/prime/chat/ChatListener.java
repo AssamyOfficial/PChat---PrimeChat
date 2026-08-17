@@ -238,6 +238,20 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onChat(AsyncChatEvent event) {
         Player sender = event.getPlayer();
+
+        if (!plugin.getChatManager().isEnabled() && !plugin.getChatManager().canBypass(sender)) {
+            event.setCancelled(true);
+            Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(
+                    plugin.getChatFormatRenderer().parseFormat(
+                            plugin.getCommandConfig().getString(
+                                    "commands.chat.messages.blocked",
+                                    "<red>◆</red> <gray>Чат сейчас отключён.</gray>"
+                            )
+                    )
+            ));
+            return;
+        }
+
         String messageText = PlainTextComponentSerializer.plainText().serialize(event.message());
 
         ChatChannel channel = plugin.getChatChannelRouter().getChannelForMessage(sender, messageText);
