@@ -13,22 +13,13 @@ import java.util.List;
 public class ChatFormatRenderer {
 
     private final PrimeChat plugin;
-
-    private final MiniMessage miniMessage =
-            MiniMessage.miniMessage();
+    private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
     public ChatFormatRenderer(PrimeChat plugin) {
         this.plugin = plugin;
     }
 
-    /*
-     * ============================================================
-     * FORMAT
-     * ============================================================
-     */
-
     public Component parseFormat(String format) {
-
         if (format == null || format.isEmpty()) {
             return Component.empty();
         }
@@ -60,87 +51,29 @@ public class ChatFormatRenderer {
         return miniMessage.deserialize(format);
     }
 
-    /*
-     * ============================================================
-     * PLACEHOLDER API
-     * ============================================================
-     */
-
-    private String processPlaceholderAPI(
-            Player player,
-            String format
-    ) {
-
-        if (!Bukkit.getPluginManager()
-                .isPluginEnabled("PlaceholderAPI")) {
-
+    private String processPlaceholderAPI(Player player, String format) {
+        if (!Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             return format;
         }
 
-        /*
-         * Защищаем PrimeChat placeholders.
-         */
         format = format
-                .replace(
-                        "%player%",
-                        "__PRIMECHAT_PLAYER__"
-                )
-                .replace(
-                        "%displayname%",
-                        "__PRIMECHAT_DISPLAYNAME__"
-                )
-                .replace(
-                        "%display_name%",
-                        "__PRIMECHAT_DISPLAYNAME__"
-                )
-                .replace(
-                        "%message%",
-                        "__PRIMECHAT_MESSAGE__"
-                );
+                .replace("%player%", "__PRIMECHAT_PLAYER__")
+                .replace("%displayname%", "__PRIMECHAT_DISPLAYNAME__")
+                .replace("%display_name%", "__PRIMECHAT_DISPLAYNAME__")
+                .replace("%message%", "__PRIMECHAT_MESSAGE__");
 
-        /*
-         * Обрабатываем PlaceholderAPI.
-         */
-        format = PlaceholderAPI.setPlaceholders(
-                player,
-                format
-        );
+        format = PlaceholderAPI.setPlaceholders(player, format);
 
-        /*
-         * Возвращаем внутренние placeholders.
-         */
         return format
-                .replace(
-                        "__PRIMECHAT_PLAYER__",
-                        "<player>"
-                )
-                .replace(
-                        "__PRIMECHAT_DISPLAYNAME__",
-                        "<displayname>"
-                )
-                .replace(
-                        "__PRIMECHAT_MESSAGE__",
-                        "<message>"
-                );
+                .replace("__PRIMECHAT_PLAYER__", "<player>")
+                .replace("__PRIMECHAT_DISPLAYNAME__", "<displayname>")
+                .replace("__PRIMECHAT_MESSAGE__", "<message>");
     }
 
-    /*
-     * ============================================================
-     * PLAYER HOVER
-     * ============================================================
-     */
-
-    public Component createPlayerHover(
-            Player player
-    ) {
-
-        List<String> lines =
-                plugin.getConfig().getStringList(
-                        "player-interaction.hover.text"
-                );
+    public Component createPlayerHover(Player player) {
+        List<String> lines = plugin.getConfig().getStringList("player-interaction.hover.text");
 
         if (lines.isEmpty()) {
-
             lines = List.of(
                     "<aqua>👤 <bold>%player%</bold></aqua>",
                     "<gray>Игрок сервера</gray>",
@@ -149,328 +82,120 @@ public class ChatFormatRenderer {
             );
         }
 
-        Component hover =
-                Component.empty();
+        Component hover = Component.empty();
 
         for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i)
+                    .replace("%player%", player.getName())
+                    .replace("%displayname%", player.getDisplayName())
+                    .replace("%display_name%", player.getDisplayName());
 
-            String line = lines.get(i);
-
-            line = line
-                    .replace(
-                            "%player%",
-                            player.getName()
-                    )
-                    .replace(
-                            "%displayname%",
-                            player.getDisplayName()
-                    )
-                    .replace(
-                            "%display_name%",
-                            player.getDisplayName()
-                    );
-
-            if (Bukkit.getPluginManager()
-                    .isPluginEnabled("PlaceholderAPI")) {
-
-                line = PlaceholderAPI.setPlaceholders(
-                        player,
-                        line
-                );
+            if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+                line = PlaceholderAPI.setPlaceholders(player, line);
             }
 
-            hover = hover.append(
-                    parseFormat(line)
-            );
+            hover = hover.append(parseFormat(line));
 
             if (i < lines.size() - 1) {
-                hover = hover.append(
-                        Component.newline()
-                );
+                hover = hover.append(Component.newline());
             }
         }
 
         return hover;
     }
 
-    /*
-     * ============================================================
-     * PLAYER COMPONENT
-     * ============================================================
-     */
-
-    private Component createPlayerComponent(
-            Player player,
-            Component hover,
-            boolean hoverEnabled,
-            boolean clickEnabled,
-            String clickAction
-    ) {
-
-        Component component =
-                Component.text(
-                        player.getName()
-                );
+    private Component createPlayerComponent(Player player, Component hover, boolean hoverEnabled, boolean clickEnabled, String clickAction) {
+        Component component = Component.text(player.getName());
 
         if (hoverEnabled) {
-
-            component =
-                    component.hoverEvent(
-                            HoverEvent.showText(
-                                    hover
-                            )
-                    );
+            component = component.hoverEvent(HoverEvent.showText(hover));
         }
 
-        if (clickEnabled
-                && clickAction.equalsIgnoreCase(
-                "suggest-message"
-        )) {
-
-            component =
-                    component.clickEvent(
-                            ClickEvent.suggestCommand(
-                                    "/msg "
-                                            + player.getName()
-                                            + " "
-                            )
-                    );
+        if (clickEnabled && clickAction.equalsIgnoreCase("suggest-message")) {
+            component = component.clickEvent(
+                    ClickEvent.suggestCommand("/msg " + player.getName() + " ")
+            );
         }
 
         return component;
     }
 
-    /*
-     * ============================================================
-     * DISPLAY NAME COMPONENT
-     * ============================================================
-     */
-
-    private Component createDisplayNameComponent(
-            Player player,
-            Component hover,
-            boolean hoverEnabled,
-            boolean clickEnabled,
-            String clickAction
-    ) {
-
-        Component component =
-                player.displayName();
+    private Component createDisplayNameComponent(Player player, Component hover, boolean hoverEnabled, boolean clickEnabled, String clickAction) {
+        Component component = player.displayName();
 
         if (hoverEnabled) {
-
-            component =
-                    component.hoverEvent(
-                            HoverEvent.showText(
-                                    hover
-                            )
-                    );
+            component = component.hoverEvent(HoverEvent.showText(hover));
         }
 
-        if (clickEnabled
-                && clickAction.equalsIgnoreCase(
-                "suggest-message"
-        )) {
-
-            component =
-                    component.clickEvent(
-                            ClickEvent.suggestCommand(
-                                    "/msg "
-                                            + player.getName()
-                                            + " "
-                            )
-                    );
+        if (clickEnabled && clickAction.equalsIgnoreCase("suggest-message")) {
+            component = component.clickEvent(
+                    ClickEvent.suggestCommand("/msg " + player.getName() + " ")
+            );
         }
 
         return component;
     }
 
-    /*
-     * ============================================================
-     * RENDER CHANNEL
-     * ============================================================
-     */
-
-    public Component render(
-            Player player,
-            ChatChannel channel,
-            String messageText,
-            Component originalMessage
-    ) {
-
+    public Component render(Player player, ChatChannel channel, String messageText, Component originalMessage) {
         if (channel == null) {
             return Component.empty();
         }
 
-        String format =
-                channel.getFormat();
+        String format = processPlaceholderAPI(player, channel.getFormat());
+        Component formatted = parseFormat(format);
 
-        /*
-         * PlaceholderAPI.
-         */
-        format =
-                processPlaceholderAPI(
-                        player,
-                        format
-                );
+        boolean hoverEnabled = plugin.getConfig().getBoolean(
+                "player-interaction.hover.enabled",
+                true
+        );
 
-        /*
-         * Парсим формат канала.
-         */
-        Component formatted =
-                parseFormat(format);
+        boolean clickEnabled = plugin.getConfig().getBoolean(
+                "player-interaction.click.enabled",
+                true
+        );
 
-        /*
-         * Настройки Hover / Click.
-         */
-        boolean hoverEnabled =
-                plugin.getConfig().getBoolean(
-                        "player-interaction.hover.enabled",
-                        true
-                );
+        String clickAction = plugin.getConfig().getString(
+                "player-interaction.click.action",
+                "suggest-message"
+        );
 
-        boolean clickEnabled =
-                plugin.getConfig().getBoolean(
-                        "player-interaction.click.enabled",
-                        true
-                );
+        Component playerHover = createPlayerHover(player);
 
-        String clickAction =
-                plugin.getConfig().getString(
-                        "player-interaction.click.action",
-                        "suggest-message"
-                );
+        Component playerComponent = createPlayerComponent(
+                player,
+                playerHover,
+                hoverEnabled,
+                clickEnabled,
+                clickAction
+        );
 
-        /*
-         * Hover игрока.
-         */
-        Component playerHover =
-                createPlayerHover(player);
+        formatted = formatted.replaceText(builder -> builder
+                .matchLiteral("<player>")
+                .replacement(playerComponent)
+        );
 
-        /*
-         * ========================================================
-         * %player%
-         * ========================================================
-         */
+        Component displayNameComponent = createDisplayNameComponent(
+                player,
+                playerHover,
+                hoverEnabled,
+                clickEnabled,
+                clickAction
+        );
 
-        Component playerComponent =
-                createPlayerComponent(
-                        player,
-                        playerHover,
-                        hoverEnabled,
-                        clickEnabled,
-                        clickAction
-                );
+        formatted = formatted.replaceText(builder -> builder
+                .matchLiteral("<displayname>")
+                .replacement(displayNameComponent)
+        );
 
-        formatted =
-                formatted.replaceText(
-                        builder -> builder
-                                .matchLiteral(
-                                        "<player>"
-                                )
-                                .replacement(
-                                        playerComponent
-                                )
-                );
+        Component messageComponent = parsePlayerMessage(player, messageText);
 
-        /*
-         * ========================================================
-         * %displayname%
-         * ========================================================
-         */
-
-        Component displayNameComponent =
-                createDisplayNameComponent(
-                        player,
-                        playerHover,
-                        hoverEnabled,
-                        clickEnabled,
-                        clickAction
-                );
-
-        formatted =
-                formatted.replaceText(
-                        builder -> builder
-                                .matchLiteral(
-                                        "<displayname>"
-                                )
-                                .replacement(
-                                        displayNameComponent
-                                )
-                );
-
-        /*
-         * ========================================================
-         * %message%
-         * ========================================================
-         */
-
-        Component messageComponent;
-
-        /*
-         * Если текст сообщения не изменялся,
-         * сохраняем оригинальный Adventure Component.
-         *
-         * Это позволяет не терять форматирование
-         * самого сообщения игрока.
-         */
-        String originalText =
-                net.kyori.adventure.text.serializer.plain
-                        .PlainTextComponentSerializer
-                        .plainText()
-                        .serialize(
-                                originalMessage
-                        );
-
-        if (originalText.equals(messageText)) {
-
-            /*
-             * Обычный чат.
-             *
-             * Если игрок имеет permission,
-             * разрешаем ему использовать цвета.
-             */
-            messageComponent =
-                    parsePlayerMessage(
-                            player,
-                            messageText
-                    );
-
-        } else {
-
-            /*
-             * Сообщение изменилось, например:
-             *
-             * !Привет
-             *
-             * Поэтому используем уже обработанный текст.
-             */
-            messageComponent =
-                    parsePlayerMessage(
-                            player,
-                            messageText
-                    );
-        }
-
-        formatted =
-                formatted.replaceText(
-                        builder -> builder
-                                .matchLiteral(
-                                        "<message>"
-                                )
-                                .replacement(
-                                        messageComponent
-                                )
-                );
-
-        return formatted;
+        return formatted.replaceText(builder -> builder
+                .matchLiteral("<message>")
+                .replacement(messageComponent)
+        );
     }
 
-    private Component parsePlayerMessage(
-            Player player,
-            String message
-    ) {
-
+    private Component parsePlayerMessage(Player player, String message) {
         boolean enabled = plugin.getConfig().getBoolean(
                 "chat-color.enabled",
                 true
@@ -488,11 +213,9 @@ public class ChatFormatRenderer {
         if (permission != null
                 && !permission.isEmpty()
                 && !player.hasPermission(permission)) {
-
             return Component.text(message);
         }
 
         return parseFormat(message);
     }
 }
-
