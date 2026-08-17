@@ -1,30 +1,47 @@
-# PrimeChat 1.2.0
+# PrimeChat 1.3.0
 
-PrimeChat — настраиваемая система чатов для Paper с локальным и глобальным режимами, командными каналами, HEX/MiniMessage, цветным чатом, интерактивными никами, упоминаниями и PlaceholderAPI.
+![PrimeChat](docs/primechat-overview.svg)
+
+PrimeChat — современная и гибкая система чатов для Paper 1.21.x. Плагин объединяет локальный и глобальный чат, собственные каналы, личные сообщения, упоминания, AFK, SocialSpy, CommandSpy, контроль команд и удобную настройку через YAML.
+
+![Возможности](docs/primechat-features.svg)
 
 ## Возможности
 
 - Локальный чат с настраиваемым радиусом.
-- Глобальный чат через триггер.
-- Командные каналы через `config.yml`.
+- Глобальный чат через триггер `!`.
 - Неограниченное количество собственных каналов.
-- Алиасы командных каналов.
-- Отдельный permission для каждого канала.
-- Включение и отключение каналов без изменения Java-кода.
-- MiniMessage и HEX-цвета.
-- Градиенты, стили и стандартные `&`-цвета.
+- Командные каналы с aliases и отдельными permissions.
+- Автоматический Tab Completion для новых командных каналов.
+- Админ-чат и Donate-чат.
+- HEX, MiniMessage, стили и градиенты.
 - Цветной чат с отдельным permission.
-- Hover-информация при наведении на ник.
-- Клик по нику с предложением команды `/msg`.
+- Hover и интерактивный клик по никам.
 - Упоминания через `@ник`.
 - Несколько упоминаний в одном сообщении.
-- Уведомления об упоминаниях только для игроков, которые реально получили сообщение.
-- Отдельные сообщения для известного офлайн-игрока и неизвестного ника.
-- Отключение уведомления при упоминании самого себя.
-- Уведомление «Вас никто не услышал».
-- Отдельная настройка уведомления «Вас никто не услышал» для каждого канала.
+- Уведомление об упоминании только если игрок реально получил сообщение.
+- Звук при упоминании с настройкой в `config.yml`.
+- Сообщения для офлайн-игроков и неизвестных ников.
+- Защита от уведомления при самоупоминании.
+- Уведомление «Вас никто не услышал» с отдельной настройкой для каналов.
+- `/msg`, `/m`, `/message`.
+- Многострочный формат личных сообщений.
+- `/r` и `/reply` для быстрого ответа.
+- Звук и кликабельный ответ на входящее ЛС.
+- `/ss` / `/socialspy` для просмотра ЛС.
+- `/cs` / `/commandspy` для просмотра команд игроков.
+- `/cc` / `/clearchat` для очистки чата.
+- `/afk` с автоматическим выходом из AFK при движении.
+- Уведомление отправителю при обращении к AFK-игроку.
+- `/chat` и `/ch` для включения и отключения чата.
+- Permission для обхода отключённого чата.
+- Whitelist и blacklist команд.
+- Задержки выполнения команд.
+- Permission для уменьшения или полного обхода задержки.
 - Необязательная интеграция с PlaceholderAPI.
 - Перезагрузка конфигурации без перезапуска сервера.
+
+![Команды](docs/primechat-commands.svg)
 
 ## Требования
 
@@ -34,23 +51,64 @@ PrimeChat — настраиваемая система чатов для Paper 
 
 ## Установка
 
-1. Скопируйте `PrimeChat-1.2.0.jar` в папку `plugins`.
-2. Запустите сервер.
-3. Откройте `plugins/PrimeChat/config.yml`.
-4. Настройте каналы и оформление.
-5. Примените изменения командой `/primechat reload`.
+1. Скачайте `PrimeChat-1.3.0.jar`.
+2. Поместите JAR в `plugins/`.
+3. Запустите или перезапустите сервер.
+4. Настройте `config.yml` и `command.yml`.
+5. Для применения изменений используйте `/pc reload`.
+
+Плагин создаёт и использует:
+
+```text
+plugins/PrimeChat/config.yml
+plugins/PrimeChat/command.yml
+```
+
+![Настройка](docs/primechat-config.svg)
 
 ## Конфигурация
 
-Основной файл — `plugins/PrimeChat/config.yml`.
+### config.yml
 
-PrimeChat использует MiniMessage. HEX указывается непосредственно в формате:
+`config.yml` отвечает за основные функции и внешний вид:
+
+- каналы;
+- радиус локального чата;
+- формат сообщений;
+- HEX и градиенты;
+- интерактивные ники;
+- упоминания;
+- звук упоминаний;
+- цветной чат;
+- «Вас никто не услышал».
+
+### command.yml
+
+`command.yml` отвечает за команды и их оформление:
+
+- `/msg`, `/r`;
+- SocialSpy и CommandSpy;
+- очистку чата;
+- AFK;
+- включение и отключение чата;
+- whitelist/blacklist;
+- задержки команд;
+- permissions;
+- все сообщения и форматы команд.
+
+Подробные пояснения и рабочие примеры находятся непосредственно внутри этих двух файлов.
+
+## MiniMessage и HEX
+
+PrimeChat использует MiniMessage.
+
+Обычный HEX:
 
 ```yaml
 format: "<#00E5FF>%player%</#00E5FF> <gray>»</gray> <white>%message%</white>"
 ```
 
-Также доступны градиенты:
+Градиент:
 
 ```yaml
 format: "<gradient:#00E5FF:#7C4DFF>%player%</gradient> <gray>»</gray> <white>%message%</white>"
@@ -65,156 +123,216 @@ format: "<gradient:#00E5FF:#7C4DFF>%player%</gradient> <gray>»</gray> <white>%m
 | `%display_name%` | Альтернативная запись Display Name |
 | `%message%` | Сообщение |
 
-При установленном PlaceholderAPI дополнительно доступны его placeholders.
-
-Подробные готовые шаблоны и пояснения находятся непосредственно в `config.yml`.
+При установленном PlaceholderAPI доступны его placeholders.
 
 ## Каналы
 
-Все каналы находятся в разделе `channels`. Новый канал добавляется только через конфигурацию.
+Каналы создаются в `config.yml` в разделе `channels`.
 
-### Локальный канал
+### Локальный
 
 ```yaml
 local:
   enabled: true
   mode: "local"
-  trigger: ""
-  command: ""
-  aliases: []
-  permission: ""
   radius: 100
-  format: "<#5C6BC0>[L]</#5C6BC0> <#00E5FF>%player%</#00E5FF> <gray>»</gray> <white>%message%</white>"
+  format: "<#00E5FF>Ⓛ</#00E5FF> <#00E5FF>%player%</#00E5FF> <gray>»</gray> <white>%message%</white>"
 ```
 
-Сообщение получают игроки в том же мире в пределах `radius`.
+Игроки в том же мире получают сообщение в пределах указанного радиуса.
 
-### Глобальный канал
+### Глобальный
 
 ```yaml
 global:
   enabled: true
   mode: "global"
   trigger: "!"
-  command: ""
-  aliases: []
-  permission: ""
-  radius: 0
-  format: "<gradient:#00E5FF:#7C4DFF>[G]</gradient> <#7C4DFF>%player%</#7C4DFF> <gray>»</gray> <white>%message%</white>"
+  format: "<#7C4DFF>Ⓖ</#7C4DFF> <#7C4DFF>%player%</#7C4DFF> <gray>»</gray> <white>%message%</white>"
 ```
 
-Сообщение `!Привет` будет отправлено как `Привет` через глобальный канал.
+`!Привет` отправляет сообщение через глобальный канал.
 
-### Командный канал
+### Командный
 
 ```yaml
-admin:
+vip:
   enabled: true
   mode: "command"
-  trigger: ""
-  command: "ac"
+  command: "vip"
   aliases:
-    - "adminchat"
-  permission: "primechat.admin"
-  radius: 0
-  format: "<gradient:#FF5252:#FF1744>[ADMIN]</gradient> <#FF5252>%player%</#FF5252> <gray>»</gray> <white>%message%</white>"
+    - "v"
+  permission: "primechat.vip"
+  format: "<#FFD54F>◆ VIP</#FFD54F> <#00E5FF>%player%</#00E5FF> <gray>»</gray> <white>%message%</white>"
 ```
 
-После настройки доступны `/ac сообщение` и `/adminchat сообщение`.
+После `/pc reload` автоматически появятся `/vip`, `/v` и Tab Completion.
 
-Параметр `permission` ограничивает отправку и получение сообщений канала.
+### Стандартные каналы
 
-После изменения каналов выполните `/primechat reload`.
+| Канал | Использование | Permission |
+|---|---|---|
+| Local | обычный чат | нет |
+| Global | `!сообщение` | нет |
+| Admin | `/ac`, `/adminchat` | `primechat.admin` |
+| Donate | `/dc`, `/donatechat` | `primechat.donate` |
 
-## Стандартные каналы
+Staff Chat в 1.3.0 намеренно не поставляется: сервер может создать его самостоятельно как обычный command-канал.
 
-В поставляемом `config.yml` настроены:
+## Личные сообщения
 
-| Канал | Режим | Использование | Permission |
-|---|---|---|---|
-| `local` | local | обычный чат | нет |
-| `global` | global | `!сообщение` | нет |
-| `admin` | command | `/ac`, `/adminchat` | `primechat.admin` |
-| `donate` | command | `/dc`, `/donatechat` | `primechat.donate` |
-| `staff` | command | `/sc`, `/staffchat` | `primechat.staff` |
+```text
+/msg <игрок> <сообщение>
+/m <игрок> <сообщение>
+/message <игрок> <сообщение>
+```
 
-`donate` и `staff` используют permissions из конфигурации. Эти permissions не обязаны быть отдельно объявлены в `plugin.yml`.
+Ответ:
+
+```text
+/r <сообщение>
+/reply <сообщение>
+```
+
+Формат ЛС поддерживает несколько строк. Например:
+
+```yaml
+format:
+  incoming:
+    - "<#00E5FF>◆ ЛС</#00E5FF> <gray>← %sender%</gray>"
+    - "<gray>%message%</gray>"
+```
+
+Входящее сообщение может иметь звук и кликабельную область для `/r`.
+
+Если адресат находится в AFK, отправитель получает отдельное уведомление. Само получение ЛС не снимает AFK.
 
 ## Упоминания
 
-Упоминание выполняется через `@Ник`.
+```text
+@Assamy_ @Assamy_2 Привет!
+```
+
+Поддерживаются несколько игроков в одном сообщении, включая ники с цифрами и `_`.
+
+Онлайн-игрок получает уведомление только если он действительно получил исходное сообщение. Это особенно важно для локального чата: игрок вне радиуса не получит уведомление.
+
+Если игрок офлайн, используется сообщение `mentions.notification.offline`; если сервер не знает такого игрока — `mentions.notification.not-found`.
+
+Звук упоминания настраивается в `config.yml`:
+
+```yaml
+sound:
+  enabled: true
+  name: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  volume: 1.0
+  pitch: 1.0
+```
+
+## SocialSpy и CommandSpy
 
 ```text
-@Assamy_ @Assamy_2 Привет всем!
+/socialspy
+/ss
+
+/commandspy
+/cs
 ```
 
-Поддерживается несколько игроков в одном сообщении. Ники с цифрами и `_` обрабатываются корректно.
+Формат отображения полностью меняется в `command.yml`. По умолчанию эти сообщения сделаны ненавязчивыми, чтобы не мешать обычному чату.
 
-Для онлайн-игрока уведомление отправляется только после фильтрации аудитории сообщения. Поэтому игрок за пределами радиуса локального канала уведомление не получит.
-
-При упоминании самого себя уведомление не отправляется.
-
-Если упомянутый игрок известен серверу, но офлайн, используется `mentions.notification.offline`. Если сервер не знает такого игрока, используется `mentions.notification.not-found`.
-
-Все тексты и оформление этих уведомлений настраиваются в `config.yml`.
-
-## Цветной чат
-
-```yaml
-chat-color:
-  enabled: true
-  permission: "primechat.chatcolor"
-```
-
-Игрок с `primechat.chatcolor` может использовать MiniMessage и HEX непосредственно в тексте сообщения:
+## AFK
 
 ```text
-<#00E5FF>Привет!</#00E5FF>
+/afk
 ```
 
-## «Вас никто не услышал»
+Игрок может вручную перейти в AFK. При движении он автоматически возвращается в активное состояние и получает уведомление.
 
-Глобальная настройка:
+Получение `/msg` не снимает AFK. Если другой игрок пишет AFK-пользователю, отправитель получает уведомление об AFK-статусе.
+
+## Управление чатом
+
+```text
+/chat on
+/chat off
+/chat
+/ch on
+/ch off
+```
+
+`primechat.chat.toggle` управляет состоянием чата.
+
+`primechat.chat.bypass` позволяет писать при выключенном чате.
+
+## Контроль команд
+
+В `command.yml` можно включить whitelist:
 
 ```yaml
-unheard-message:
-  enabled: true
-  message: "<red>⚠</red> <gray>Вас никто не услышал.</gray>"
+whitelist-enabled: true
+whitelist:
+  - "msg"
+  - "r"
+  - "spawn"
 ```
 
-Уведомление появляется, если после всех правил канала сообщение не получил ни один другой игрок.
-
-Его можно переопределить для отдельного канала:
+Или blacklist:
 
 ```yaml
-local:
-  unheard-message:
-    enabled: true
-    message: "<yellow>⚠</yellow> <gray>В радиусе никто не услышал Вас.</gray>"
+blacklist-enabled: true
+blacklist:
+  - "op"
+  - "stop"
 ```
 
-Чтобы оставить функцию только в одном канале, отключите глобальную настройку и включите её в нужном канале.
+Задержки задаются коротко:
 
-## Интерактивный ник
+```yaml
+delays:
+  spawn: 5
+  home: 10
+```
 
-В `player-interaction` можно настроить:
+`primechat.commanddelay.reduce` уменьшает задержку до `reduced-seconds`, а `primechat.commanddelay.bypass` полностью её отключает.
 
-- текст при наведении;
-- включение/отключение hover;
-- включение/отключение клика;
-- действие клика.
+`primechat.commandcontrol.bypass` обходит ограничения whitelist/blacklist.
 
-Стандартное действие `suggest-message` предлагает `/msg <ник>`.
+## Очистка чата
 
-## PlaceholderAPI
+```text
+/clearchat
+/cc
+```
 
-PlaceholderAPI — необязательная зависимость. Без него PrimeChat продолжает работать.
+Permission: `primechat.clearchat`.
 
-При наличии PlaceholderAPI его placeholders можно использовать в форматах каналов, hover-тексте и уведомлениях.
+Сообщения команды настраиваются в `command.yml`.
 
-## Команды
+## Permissions
 
-### Управление PrimeChat
+| Permission | Назначение | По умолчанию |
+|---|---|---|
+| `primechat.admin` | Управление PrimeChat | OP |
+| `primechat.chatcolor` | Цветной и форматированный чат | Нет |
+| `primechat.msg` | Личные сообщения | Да |
+| `primechat.socialspy` | SocialSpy | OP |
+| `primechat.commandspy` | CommandSpy | OP |
+| `primechat.clearchat` | Очистка чата | OP |
+| `primechat.afk` | AFK | Да |
+| `primechat.chat.toggle` | Включение/выключение чата | OP |
+| `primechat.chat.bypass` | Обход отключения чата | OP |
+| `primechat.commandcontrol.bypass` | Обход whitelist/blacklist | OP |
+| `primechat.commanddelay.reduce` | Уменьшение задержек | Нет |
+| `primechat.commanddelay.bypass` | Полный обход задержек | OP |
+
+Permissions каналов задаются непосредственно в `config.yml`. Например:
+
+```yaml
+permission: "primechat.vip"
+```
+
+## Команды PrimeChat
 
 ```text
 /primechat help
@@ -222,65 +340,20 @@ PlaceholderAPI — необязательная зависимость. Без �
 /primechat version
 ```
 
-`/primechat` требует `primechat.admin`.
-
-- `help` — справка.
-- `reload` — перезагрузка `config.yml` и каналов.
-- `version` — версия плагина.
-
-### Каналы
-
-Командные каналы создаются из `config.yml`. В стандартной конфигурации:
+Алиасы:
 
 ```text
-/ac <сообщение>
-/adminchat <сообщение>
-/dc <сообщение>
-/donatechat <сообщение>
-/sc <сообщение>
-/staffchat <сообщение>
+/pchat
+/pc
 ```
 
-## Permissions
+`/pc reload` — основной способ применить изменения конфигурации без перезапуска сервера.
 
-| Permission | Назначение | По умолчанию |
-|---|---|---|
-| `primechat.admin` | Управление PrimeChat и стандартный Admin Chat | OP |
-| `primechat.chatcolor` | Цветной и форматированный чат | Нет |
-| `primechat.donate` | Стандартный Donate Chat | Настраивается сервером |
-| `primechat.staff` | Стандартный Staff Chat | Настраивается сервером |
+## PlaceholderAPI
 
-Для любого нового канала можно создать собственное право:
+PlaceholderAPI является необязательной зависимостью. Без него PrimeChat работает самостоятельно.
 
-```yaml
-permission: "primechat.example"
-```
-
-Пустое значение `permission: ""` отключает ограничение permission для канала.
-
-## Структура проекта
-
-```text
-PrimeChat/
-├── src/main/java/corp/prime/chat/
-│   ├── ChatChannel.java
-│   ├── ChatChannelCommandListener.java
-│   ├── ChatChannelFormatter.java
-│   ├── ChatChannelManager.java
-│   ├── ChatChannelMessageSender.java
-│   ├── ChatChannelRouter.java
-│   ├── ChatFormatRenderer.java
-│   ├── ChatListener.java
-│   ├── PrimeChat.java
-│   ├── PrimeChatCommand.java
-│   └── PrimeChatTabCompleter.java
-├── src/main/resources/
-│   ├── config.yml
-│   └── plugin.yml
-├── pom.xml
-├── LICENSE
-└── README.md
-```
+Если PlaceholderAPI установлен, его placeholders можно использовать в форматах каналов, hover-тексте и сообщениях.
 
 ## Сборка
 
@@ -290,9 +363,24 @@ mvn clean package
 
 Готовый JAR появится в `target/`.
 
-## Лицензия
+## Структура проекта
 
-Проект распространяется на условиях лицензии, указанной в `LICENSE`.
+```text
+PrimeChat/
+├── src/main/java/corp/prime/chat/
+├── src/main/resources/
+│   ├── config.yml
+│   ├── command.yml
+│   └── plugin.yml
+├── docs/
+│   ├── primechat-overview.svg
+│   ├── primechat-features.svg
+│   ├── primechat-commands.svg
+│   └── primechat-config.svg
+├── pom.xml
+├── LICENSE
+└── README.md
+```
 
 ## PrimeDev
 
