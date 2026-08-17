@@ -1,4 +1,32 @@
+# ============================================================
+# PrimeChat 1.3.0 — НАСТРОЙКИ КОМАНД
+# ============================================================
+# Этот файл отвечает за команды, permissions и сообщения.
+# Основные функции, каналы и оформление находятся в config.yml.
+#
+# Все сообщения поддерживают MiniMessage и HEX.
+# Пример: <red>◆</red> <gray>Текст</gray>
+#
+# После изменений используйте /pc reload.
+
 commands:
+
+  # ============================================================
+  # ЛИЧНЫЕ СООБЩЕНИЯ
+  # ============================================================
+  # /msg <игрок> <сообщение>
+  # Алиасы: /m, /message
+  #
+  # /r <сообщение>
+  # Алиас: /reply
+  # /r отвечает последнему собеседнику.
+  #
+  # Формат можно сделать многострочным: каждый элемент списка — отдельная строка.
+  # Доступны:
+  # %sender% / %sender_displayname%
+  # %recipient% / %recipient_displayname%
+  # %message%
+
   msg:
     enabled: true
     permission: "primechat.msg"
@@ -11,10 +39,10 @@ commands:
       self: "<red>◆</red> <gray>Нельзя отправить сообщение самому себе.</gray>"
       format:
         outgoing:
-          - "<#00E5FF>◆ ЛС</#00E5FF> <gray>→</gray> <gray>%recipient%</gray>"
+          - "<#00E5FF>◆ ЛС</#00E5FF> <gray>→ %recipient%</gray>"
           - "<gray>%message%</gray>"
         incoming:
-          - "<#00E5FF>◆ ЛС</#00E5FF> <gray>←</gray> <gray>%sender%</gray>"
+          - "<#00E5FF>◆ ЛС</#00E5FF> <gray>← %sender%</gray>"
           - "<gray>%message%</gray>"
       notifications:
         sound:
@@ -36,6 +64,13 @@ commands:
       no-target: "<red>◆</red> <gray>Нет собеседника для ответа.</gray>"
       target-offline: "<red>◆</red> <gray>Собеседник сейчас не в сети.</gray>"
 
+  # ============================================================
+  # SOCIALSPY
+  # ============================================================
+  # /socialspy
+  # Алиас: /ss
+  # Показывает наблюдателю личные сообщения.
+
   socialspy:
     enabled: true
     permission: "primechat.socialspy"
@@ -45,6 +80,13 @@ commands:
       enabled: "<#00E5FF>◆ SS</#00E5FF> <gray>включён.</gray>"
       disabled: "<#00E5FF>◆ SS</#00E5FF> <gray>выключен.</gray>"
     format: "<#00E5FF>◆ SS</#00E5FF> <gray>%sender% → %recipient%:</gray> <gray>%message%</gray>"
+
+  # ============================================================
+  # COMMANDSPY
+  # ============================================================
+  # /commandspy
+  # Алиас: /cs
+  # Показывает наблюдателю команды, которые используют игроки.
 
   commandspy:
     enabled: true
@@ -56,28 +98,53 @@ commands:
       disabled: "<#00E5FF>◆ CS</#00E5FF> <gray>выключен.</gray>"
     format: "<#00E5FF>◆ CS</#00E5FF> <gray>%player% →</gray> <gray>%command%</gray>"
 
+  # ============================================================
+  # КОНТРОЛЬ КОМАНД
+  # ============================================================
+  # Whitelist: разрешает только команды из списка.
+  # Blacklist: запрещает только команды из списка.
+  # Одновременно включать whitelist и blacklist обычно не требуется.
+  #
+  # delays задаёт задержку в секундах простой записью:
+  #   spawn: 5
+  #   home: 10
+  #
+  # primechat.commanddelay.reduce — уменьшает задержку до reduced-seconds.
+  # primechat.commanddelay.bypass — полностью убирает задержку.
+
   command-control:
     bypass-permission: "primechat.commandcontrol.bypass"
+
     whitelist-enabled: false
     whitelist:
       - "msg"
       - "r"
       - "spawn"
+
     blacklist-enabled: false
     blacklist:
       - "op"
       - "stop"
+
     delays:
       spawn: 5
       home: 10
+
     delay-permissions:
       bypass: "primechat.commanddelay.bypass"
       reduce: "primechat.commanddelay.reduce"
       reduced-seconds: 2
+
     messages:
       not-whitelisted: "<red>◆</red> <gray>Эта команда не разрешена.</gray>"
       blacklisted: "<red>◆</red> <gray>Эта команда запрещена.</gray>"
       cooldown: "<red>◆</red> <gray>Подождите <white>%seconds%</white> сек.</gray>"
+
+  # ============================================================
+  # ОЧИСТКА ЧАТА
+  # ============================================================
+  # /clearchat
+  # Алиас: /cc
 
   clearchat:
     enabled: true
@@ -85,6 +152,14 @@ commands:
     messages:
       no-permission: "<red>◆</red> <gray>У вас нет прав на очистку чата.</gray>"
       success: "<#00E5FF>◆</#00E5FF> <gray>Чат очищен.</gray>"
+
+  # ============================================================
+  # AFK
+  # ============================================================
+  # /afk — включить или выключить статус AFK.
+  # Движение игрока автоматически снимает AFK.
+  # Получение личного сообщения AFK не снимает.
+  # Отправитель получает уведомление, если адресат AFK.
 
   afk:
     enabled: true
@@ -96,6 +171,16 @@ commands:
       enabled: "<#00E5FF>◆</#00E5FF> <gray>Вы отошли от клавиатуры.</gray>"
       disabled: "<#00E5FF>◆</#00E5FF> <gray>Вы снова активны.</gray>"
       sender-notice: "<yellow>◆</yellow> <gray>Сообщение отправлено. Игрок <white>%player%</white> сейчас AFK.</gray>"
+
+  # ============================================================
+  # УПРАВЛЕНИЕ ЧАТОМ
+  # ============================================================
+  # /chat
+  # Алиас: /ch
+  # /chat без аргументов показывает состояние.
+  # /chat on  — включает чат.
+  # /chat off — выключает чат.
+  # bypass позволяет писать при выключенном чате.
 
   chat:
     enabled: true
