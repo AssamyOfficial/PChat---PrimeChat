@@ -1,5 +1,5 @@
 name: PrimeChat
-version: 1.2.0
+version: 1.3.0
 main: corp.prime.chat.PrimeChat
 api-version: '1.21'
 
@@ -10,7 +10,6 @@ softdepend:
   - PlaceholderAPI
 
 commands:
-
   primechat:
     description: Управление PrimeChat
     usage: /primechat <help|reload|version>
@@ -22,8 +21,20 @@ commands:
     aliases:
       - adminchat
 
-permissions:
+  msg:
+    description: Личное сообщение игроку
+    usage: /msg <игрок> <сообщение>
+    aliases:
+      - m
+      - message
 
+  r:
+    description: Ответить на последнее личное сообщение
+    usage: /r <сообщение>
+    aliases:
+      - reply
+
+permissions:
   primechat.admin:
     description: Административные команды PrimeChat
     default: op
@@ -31,3 +42,7 @@ permissions:
   primechat.chatcolor:
     description: Позволяет использовать цвета и форматирование в чате
     default: false
+
+  primechat.msg:
+    description: Позволяет использовать личные сообщения
+    default: true
