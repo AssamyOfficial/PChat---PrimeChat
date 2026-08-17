@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="180" viewBox="0 0 1200 180">
-<defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#00E5FF"/><stop offset="1" stop-color="#7C4DFF"/></linearGradient><pattern id="p" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="24" fill="#071019"/><rect width="12" height="12" fill="#0b1823"/><rect x="12" y="12" width="12" height="12" fill="#0b1823"/></pattern></defs>
-<rect width="1200" height="180" rx="18" fill="url(#p)" stroke="#00E5FF" stroke-width="3"/><rect x="18" y="18" width="1164" height="144" rx="12" fill="none" stroke="#15364a" stroke-width="2"/>
-<path d="M45 120h70l14-14 18 14h100" fill="none" stroke="#00E5FF" stroke-width="3" opacity=".7"/>
-<text x="70" y="82" fill="url(#g)" font-family="Arial Black, sans-serif" font-size="58" letter-spacing="4">PRIMECHAT</text>
-<text x="73" y="120" fill="#D7E2EA" font-family="Arial, sans-serif" font-size="22" letter-spacing="2">MODERN CHAT SYSTEM FOR PAPER</text>
-<rect x="900" y="52" width="215" height="54" rx="10" fill="#0d2230" stroke="#00E5FF"/><text x="1007" y="87" text-anchor="middle" fill="#FFFFFF" font-family="Arial Black, sans-serif" font-size="23">PRIMEDEV</text>
-</svg>
