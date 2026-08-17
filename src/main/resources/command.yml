@@ -2,26 +2,25 @@
 # MiniMessage, HEX и PlaceholderAPI поддерживаются.
 
 commands:
-
   msg:
     enabled: true
     permission: "primechat.msg"
 
     messages:
-      player-only: "<red>Эта команда доступна только игрокам.</red>"
-      disabled: "<red>Личные сообщения отключены.</red>"
-      no-permission: "<red>У вас нет прав для использования личных сообщений.</red>"
-      usage: "<gray>Использование: <white>/msg <игрок> <сообщение></white></gray>"
-      player-not-found: "<red>Игрок <white>%player%</white> не найден или не в сети.</red>"
-      self: "<yellow>Вы не можете отправить сообщение самому себе.</yellow>"
+      player-only: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Эта команда доступна только игрокам.</gray>"
+      disabled: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Личные сообщения сейчас отключены.</gray>"
+      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>У вас нет прав для использования личных сообщений.</gray>"
+      usage: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Использование:</gray> <#00E5FF>/msg <игрок> <сообщение></#00E5FF>"
+      player-not-found: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>Игрок <white>%player%</white> не найден или не в сети.</gray>"
+      self: "<gradient:#FFB347:#7C4DFF>◆</gradient> <gray>Нельзя отправить сообщение самому себе.</gray>"
 
       format:
         outgoing:
-          - "<gray>Вы → <#00E5FF>%recipient%</#00E5FF></gray>"
-          - "<white>%message%</white>"
+          - "<gradient:#00E5FF:#7C4DFF>◆ ЛИЧНОЕ СООБЩЕНИЕ</gradient> <dark_gray>→</dark_gray> <white>%recipient%</white>"
+          - "<gray>  %message%</gray>"
         incoming:
-          - "<gray>От <#00E5FF>%sender%</#00E5FF></gray>"
-          - "<white>%message%</white>"
+          - "<gradient:#7C4DFF:#00E5FF>◆ ЛИЧНОЕ СООБЩЕНИЕ</gradient> <dark_gray>←</dark_gray> <white>%sender%</white>"
+          - "<gray>  %message%</gray>"
 
       notifications:
         sound:
@@ -32,23 +31,22 @@ commands:
 
         click:
           enabled: true
-          hover: "<yellow>Нажмите, чтобы ответить</yellow>"
+          hover: "<gradient:#00E5FF:#7C4DFF>Нажмите, чтобы ответить</gradient>"
 
   r:
     enabled: true
 
     messages:
-      player-only: "<red>Эта команда доступна только игрокам.</red>"
-      disabled: "<red>Ответы на личные сообщения отключены.</red>"
-      no-permission: "<red>У вас нет прав для использования личных сообщений.</red>"
-      usage: "<gray>Использование: <white>/r <сообщение></white></gray>"
-      no-target: "<yellow>У вас нет собеседника для ответа.</yellow>"
-      target-offline: "<yellow>Ваш последний собеседник сейчас не в сети.</yellow>"
+      player-only: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Эта команда доступна только игрокам.</gray>"
+      disabled: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Ответы на личные сообщения сейчас отключены.</gray>"
+      no-permission: "<gradient:#FF4D6D:#7C4DFF>◆</gradient> <gray>У вас нет прав для использования личных сообщений.</gray>"
+      usage: "<gradient:#00E5FF:#7C4DFF>◆</gradient> <gray>Использование:</gray> <#00E5FF>/r <сообщение></#00E5FF>"
+      no-target: "<gradient:#FFB347:#7C4DFF>◆</gradient> <gray>У вас пока нет собеседника для ответа.</gray>"
+      target-offline: "<gradient:#FFB347:#7C4DFF>◆</gradient> <gray>Ваш последний собеседник сейчас не в сети.</gray>"
 
-# Placeholders /msg:
 # %sender% — ник отправителя
 # %sender_displayname% — Display Name отправителя
 # %recipient% — ник получателя
 # %recipient_displayname% — Display Name получателя
 # %message% — текст сообщения
-# %player% — указанный ник игрока в сообщениях об ошибках
+# %player% — ник игрока в сообщениях об ошибках
