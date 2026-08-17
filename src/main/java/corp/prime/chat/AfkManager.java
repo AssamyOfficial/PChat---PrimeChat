@@ -5,8 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,7 +21,9 @@ public class AfkManager implements Listener {
     }
 
     public boolean toggle(Player player) {
-        if (afk.remove(player.getUniqueId())) return false;
+        if (afk.remove(player.getUniqueId())) {
+            return false;
+        }
         afk.add(player.getUniqueId());
         return true;
     }
@@ -34,16 +36,31 @@ public class AfkManager implements Listener {
         afk.remove(player.getUniqueId());
     }
 
+    private void becomeActive(Player player) {
+        if (!afk.remove(player.getUniqueId())) {
+            return;
+        }
+
+        String message = plugin.getCommandConfig().getString(
+                "commands.afk.messages.disabled",
+                "<green>◆</green> <gray>Вы снова активны.</gray>"
+        );
+
+        Bukkit.getScheduler().runTask(plugin, () ->
+                player.sendMessage(plugin.getChatFormatRenderer().parseFormat(message))
+        );
+    }
+
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
         if (!event.getFrom().toVector().equals(event.getTo().toVector())) {
-            remove(event.getPlayer());
+            becomeActive(event.getPlayer());
         }
     }
 
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
-        remove(event.getPlayer());
+        becomeActive(event.getPlayer());
     }
 
     @EventHandler
@@ -52,7 +69,12 @@ public class AfkManager implements Listener {
     }
 
     public String getStatus(Player player) {
-        if (!isAfk(player)) return "";
-        return plugin.getCommandConfig().getString("commands.afk.status-suffix", " <gray>[AFK]</gray>");
+        if (!isAfk(player)) {
+            return "";
+        }
+        return plugin.getCommandConfig().getString(
+                "commands.afk.status-suffix",
+                " <gray>[AFK]</gray>"
+        );
     }
 }
