@@ -24,14 +24,41 @@ public class ChatChannelTabCompleter implements Listener {
 
         String input = buffer.substring(1);
         int space = input.indexOf(' ');
-        String command = space >= 0 ? input.substring(0, space) : input;
 
+        if (space < 0) {
+            String prefix = input.toLowerCase();
+            List<String> completions = new ArrayList<>();
+
+            for (ChatChannel channel : plugin.getChatChannelManager().getChannels()) {
+                if (!channel.isEnabled() || !channel.isCommand()) {
+                    continue;
+                }
+
+                String command = channel.getCommand();
+                if (command != null && !command.isEmpty() && command.toLowerCase().startsWith(prefix)) {
+                    completions.add(command);
+                }
+
+                for (String alias : channel.getAliases()) {
+                    if (alias != null && !alias.isEmpty() && alias.toLowerCase().startsWith(prefix)) {
+                        completions.add(alias);
+                    }
+                }
+            }
+
+            if (!completions.isEmpty()) {
+                event.setCompletions(completions);
+            }
+            return;
+        }
+
+        String command = input.substring(0, space);
         ChatChannel channel = plugin.getChatChannelManager().getChannelByCommand(command);
         if (channel == null || !channel.isEnabled() || !channel.isCommand()) {
             return;
         }
 
-        if (space < 0 || input.substring(space + 1).trim().isEmpty()) {
+        if (input.substring(space + 1).trim().isEmpty()) {
             event.setCompletions(new ArrayList<>());
         }
     }
