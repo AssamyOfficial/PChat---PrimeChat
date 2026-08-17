@@ -11,10 +11,10 @@ commands:
       self: "<red>◆</red> <gray>Нельзя отправить сообщение самому себе.</gray>"
       format:
         outgoing:
-          - "<#00E5FF>◆ ЛС</#00E5FF> <dark_gray>→</dark_gray> <gray>%recipient%</gray>"
+          - "<#00E5FF>◆ ЛС</#00E5FF> <gray>→</gray> <gray>%recipient%</gray>"
           - "<gray>%message%</gray>"
         incoming:
-          - "<#00E5FF>◆ ЛС</#00E5FF> <dark_gray>←</dark_gray> <gray>%sender%</gray>"
+          - "<#00E5FF>◆ ЛС</#00E5FF> <gray>←</gray> <gray>%sender%</gray>"
           - "<gray>%message%</gray>"
       notifications:
         sound:
@@ -42,9 +42,9 @@ commands:
     messages:
       player-only: "<red>◆</red> <gray>Только игрок может использовать эту команду.</gray>"
       no-permission: "<red>◆</red> <gray>У вас нет прав на SocialSpy.</gray>"
-      enabled: "<#00E5FF>◆ SS</#00E5FF> <dark_gray>включён.</dark_gray>"
-      disabled: "<#00E5FF>◆ SS</#00E5FF> <dark_gray>выключен.</dark_gray>"
-    format: "<#00E5FF>◆ SS</#00E5FF> <dark_gray>%sender% → %recipient%:</dark_gray> <gray>%message%</gray>"
+      enabled: "<#00E5FF>◆ SS</#00E5FF> <gray>включён.</gray>"
+      disabled: "<#00E5FF>◆ SS</#00E5FF> <gray>выключен.</gray>"
+    format: "<#00E5FF>◆ SS</#00E5FF> <gray>%sender% → %recipient%:</gray> <gray>%message%</gray>"
 
   commandspy:
     enabled: true
@@ -52,9 +52,9 @@ commands:
     messages:
       player-only: "<red>◆</red> <gray>Только игрок может использовать эту команду.</gray>"
       no-permission: "<red>◆</red> <gray>У вас нет прав на CommandSpy.</gray>"
-      enabled: "<#00E5FF>◆ CS</#00E5FF> <dark_gray>включён.</dark_gray>"
-      disabled: "<#00E5FF>◆ CS</#00E5FF> <dark_gray>выключен.</dark_gray>"
-    format: "<#00E5FF>◆ CS</#00E5FF> <dark_gray>%player% →</dark_gray> <gray>%command%</gray>"
+      enabled: "<#00E5FF>◆ CS</#00E5FF> <gray>включён.</gray>"
+      disabled: "<#00E5FF>◆ CS</#00E5FF> <gray>выключен.</gray>"
+    format: "<#00E5FF>◆ CS</#00E5FF> <gray>%player% →</gray> <gray>%command%</gray>"
 
   command-control:
     bypass-permission: "primechat.commandcontrol.bypass"
@@ -89,10 +89,24 @@ commands:
   afk:
     enabled: true
     permission: "primechat.afk"
-    status-suffix: " <dark_gray>[AFK]</dark_gray>"
+    status-suffix: " <gray>[AFK]</gray>"
     messages:
       player-only: "<red>◆</red> <gray>Только игрок может использовать эту команду.</gray>"
       no-permission: "<red>◆</red> <gray>У вас нет прав на AFK.</gray>"
       enabled: "<#00E5FF>◆</#00E5FF> <gray>Вы отошли от клавиатуры.</gray>"
       disabled: "<#00E5FF>◆</#00E5FF> <gray>Вы снова активны.</gray>"
       sender-notice: "<yellow>◆</yellow> <gray>Сообщение отправлено. Игрок <white>%player%</white> сейчас AFK.</gray>"
+
+  chat:
+    enabled: true
+    permission: "primechat.chat.toggle"
+    bypass-permission: "primechat.chat.bypass"
+    messages:
+      player-only: "<red>◆</red> <gray>Только игрок может использовать эту команду.</gray>"
+      no-permission: "<red>◆</red> <gray>У вас нет прав на управление чатом.</gray>"
+      usage: "<red>◆</red> <gray>Использование: <white>/chat <on|off></white></gray>"
+      enabled: "<green>◆</green> <gray>Чат включён.</gray>"
+      disabled: "<red>◆</red> <gray>Чат выключен.</gray>"
+      status-enabled: "<green>◆</green> <gray>Чат сейчас включён.</gray>"
+      status-disabled: "<red>◆</red> <gray>Чат сейчас выключен.</gray>"
+      blocked: "<red>◆</red> <gray>Чат сейчас отключён.</gray>"
