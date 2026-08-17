@@ -34,6 +34,20 @@ commands:
     aliases:
       - reply
 
+  socialspy:
+    description: Просмотр личных сообщений
+    usage: /socialspy
+    aliases:
+      - ss
+    permission: primechat.socialspy
+
+  commandspy:
+    description: Просмотр команд игроков
+    usage: /commandspy
+    aliases:
+      - cs
+    permission: primechat.commandspy
+
 permissions:
   primechat.admin:
     description: Административные команды PrimeChat
@@ -46,3 +60,11 @@ permissions:
   primechat.msg:
     description: Позволяет использовать личные сообщения
     default: true
+
+  primechat.socialspy:
+    description: Позволяет включать SocialSpy
+    default: op
+
+  primechat.commandspy:
+    description: Позволяет включать CommandSpy
+    default: op
