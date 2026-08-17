@@ -63,8 +63,7 @@ public class PrivateMessageCommand implements CommandExecutor {
             return true;
         }
 
-        String message = join(args, 1);
-        sendPrivateMessage(sender, target, message);
+        sendPrivateMessage(sender, target, join(args, 1));
         return true;
     }
 
@@ -85,27 +84,18 @@ public class PrivateMessageCommand implements CommandExecutor {
         }
 
         UUID targetId = lastReply.get(sender.getUniqueId());
-
         if (targetId == null) {
             sendMessage(sender, "commands.r.messages.no-target", "<yellow>У вас нет собеседника для ответа.</yellow>");
             return true;
         }
 
         Player target = Bukkit.getPlayer(targetId);
-
         if (target == null) {
             sendMessage(sender, "commands.r.messages.target-offline", "<yellow>Ваш последний собеседник сейчас не в сети.</yellow>");
             return true;
         }
 
-        if (target.equals(sender)) {
-            lastReply.remove(sender.getUniqueId());
-            sendMessage(sender, "commands.r.messages.no-target", "<yellow>У вас нет собеседника для ответа.</yellow>");
-            return true;
-        }
-
-        String message = join(args, 0);
-        sendPrivateMessage(sender, target, message);
+        sendPrivateMessage(sender, target, join(args, 0));
         return true;
     }
 
@@ -113,26 +103,28 @@ public class PrivateMessageCommand implements CommandExecutor {
         lastReply.put(sender.getUniqueId(), target.getUniqueId());
         lastReply.put(target.getUniqueId(), sender.getUniqueId());
 
-        sendFormatted("commands.msg.messages.format.outgoing", sender, target, message);
-        sendFormatted("commands.msg.messages.format.incoming", target, sender, message);
+        sendFormatted("commands.msg.messages.format.outgoing", sender, sender, target, message);
+        sendFormatted("commands.msg.messages.format.incoming", target, sender, target, message);
     }
 
-    private void sendFormatted(String path, Player recipient, Player other, String message) {
+    private void sendFormatted(String path, Player recipient, Player sender, Player target, String message) {
         List<String> lines = plugin.getCommandConfig().getStringList(path);
 
         if (lines.isEmpty()) {
-            String fallback = path.endsWith("outgoing")
-                    ? "<gray>Вы → <white>%recipient%</white></gray>|<white>%message%</white>"
-                    : "<gray>От <white>%sender%</white></gray>|<white>%message%</white>";
-            lines = List.of(fallback);
+            lines = List.of(
+                    path.endsWith("outgoing")
+                            ? "<gray>Вы → <white>%recipient%</white></gray>"
+                            : "<gray>От <white>%sender%</white></gray>",
+                    "<white>%message%</white>"
+            );
         }
 
         for (String line : lines) {
             String formatted = line
-                    .replace("%sender%", other.getName())
-                    .replace("%sender_displayname%", other.getDisplayName())
-                    .replace("%recipient%", recipient.getName())
-                    .replace("%recipient_displayname%", recipient.getDisplayName())
+                    .replace("%sender%", sender.getName())
+                    .replace("%sender_displayname%", sender.getDisplayName())
+                    .replace("%recipient%", target.getName())
+                    .replace("%recipient_displayname%", target.getDisplayName())
                     .replace("%message%", message);
 
             if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
