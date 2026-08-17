@@ -57,6 +57,7 @@ commands:
     format: "<gradient:#00E5FF:#7C4DFF>◆ CS</gradient> <gray>%player% <dark_gray>→</dark_gray></gray> <white>%command%</white>"
 
   command-control:
+    bypass-permission: "primechat.commandcontrol.bypass"
     whitelist-enabled: false
     whitelist:
       - "msg"
@@ -70,6 +71,8 @@ commands:
       example:
         enabled: false
         seconds: 5
+        reduced-seconds: 2
+        reduced-permission: "primechat.commanddelay.reduce"
         delay-execution: false
         bypass-permission: "primechat.commanddelay.bypass"
     messages:
