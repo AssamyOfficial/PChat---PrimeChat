@@ -1,5 +1,6 @@
 package corp.prime.chat;
 
+import corp.prime.lib.PrimeScheduler;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
@@ -23,9 +24,11 @@ import java.util.regex.Pattern;
 
 public class ChatListener implements Listener {
     private final PrimeChat plugin;
+    private final PrimeScheduler scheduler;
 
     public ChatListener(PrimeChat plugin) {
         this.plugin = plugin;
+        this.scheduler = plugin.getPrimeScheduler();
     }
 
     private Set<String> findMentionedPlayers(String message) {
@@ -176,7 +179,7 @@ public class ChatListener implements Listener {
         }
 
         Component notification = plugin.getChatFormatRenderer().parseFormat(message);
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        scheduler.run(mentionedPlayer, () -> {
             mentionedPlayer.sendMessage(notification);
             playMentionSound(mentionedPlayer);
         });
@@ -232,7 +235,7 @@ public class ChatListener implements Listener {
         }
 
         Component notification = plugin.getChatFormatRenderer().parseFormat(message);
-        Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(notification));
+        scheduler.run(sender, () -> sender.sendMessage(notification));
     }
 
     @EventHandler
@@ -241,7 +244,7 @@ public class ChatListener implements Listener {
 
         if (!plugin.getChatManager().isEnabled() && !plugin.getChatManager().canBypass(sender)) {
             event.setCancelled(true);
-            Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(
+            scheduler.run(sender, () -> sender.sendMessage(
                     plugin.getChatFormatRenderer().parseFormat(
                             plugin.getCommandConfig().getString(
                                     "commands.chat.messages.blocked",
@@ -263,7 +266,7 @@ public class ChatListener implements Listener {
         String permission = channel.getPermission();
         if (permission != null && !permission.isEmpty() && !sender.hasPermission(permission)) {
             event.setCancelled(true);
-            Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(
+            scheduler.run(sender, () -> sender.sendMessage(
                     plugin.getChatFormatRenderer().parseFormat(
                             "<red>◆</red> <gray>У вас нет прав для использования этого чата.</gray>"
                     )
@@ -315,7 +318,7 @@ public class ChatListener implements Listener {
                 }
 
                 Component notification = plugin.getChatFormatRenderer().parseFormat(unheardMessage);
-                Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(notification));
+                scheduler.run(sender, () -> sender.sendMessage(notification));
             }
         }
 
