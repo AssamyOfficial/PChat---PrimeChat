@@ -1,5 +1,6 @@
 package corp.prime.chat;
 
+import corp.prime.lib.PrimeScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,11 +14,13 @@ public final class PrimeChat extends JavaPlugin {
     private SpyManager spyManager;
     private AfkManager afkManager;
     private ChatManager chatManager;
+    private PrimeScheduler primeScheduler;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
+        primeScheduler = new PrimeScheduler(this);
         chatChannelManager = new ChatChannelManager(this);
         chatChannelRouter = new ChatChannelRouter(this);
         chatFormatRenderer = new ChatFormatRenderer(this);
@@ -78,4 +81,5 @@ public final class PrimeChat extends JavaPlugin {
     public SpyManager getSpyManager() { return spyManager; }
     public AfkManager getAfkManager() { return afkManager; }
     public ChatManager getChatManager() { return chatManager; }
+    public PrimeScheduler getPrimeScheduler() { return primeScheduler; }
 }
