@@ -11,15 +11,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PrivateMessageCommand implements CommandExecutor {
     private final PrimeChat plugin;
-    private final Map<UUID, UUID> lastReply = new HashMap<>();
+    private final Map<UUID, UUID> lastReply = new ConcurrentHashMap<>();
 
     public PrivateMessageCommand(PrimeChat plugin) {
         this.plugin = plugin;
@@ -122,48 +122,50 @@ public class PrivateMessageCommand implements CommandExecutor {
     }
 
     private void sendFormatted(String path, Player recipient, Player sender, Player target, String message) {
-        List<String> lines = plugin.getCommandConfig().getStringList(path);
+        plugin.getPrimeScheduler().run(recipient, () -> {
+            List<String> lines = plugin.getCommandConfig().getStringList(path);
 
-        if (lines.isEmpty()) {
-            lines = List.of(
-                    path.endsWith("outgoing") ? "<gray>Вы → <white>%recipient%</white></gray>" : "<gray>От <white>%sender%</white></gray>",
-                    "<white>%message%</white>"
-            );
-        }
-
-        boolean incoming = path.endsWith("incoming");
-        boolean clickable = incoming && plugin.getCommandConfig().getBoolean("commands.msg.notifications.click.enabled", true);
-        String hoverText = plugin.getCommandConfig().getString("commands.msg.notifications.click.hover", "<yellow>Нажмите, чтобы ответить</yellow>");
-
-        for (String line : lines) {
-            String formatted = line
-                    .replace("%sender%", sender.getName())
-                    .replace("%sender_displayname%", sender.getDisplayName())
-                    .replace("%recipient%", target.getName())
-                    .replace("%recipient_displayname%", target.getDisplayName())
-                    .replace("%message%", message);
-
-            if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                formatted = PlaceholderAPI.setPlaceholders(recipient, formatted);
+            if (lines.isEmpty()) {
+                lines = List.of(
+                        path.endsWith("outgoing") ? "<gray>Вы → <white>%recipient%</white></gray>" : "<gray>От <white>%sender%</white></gray>",
+                        "<white>%message%</white>"
+                );
             }
 
-            Component component = plugin.getChatFormatRenderer().parseFormat(formatted);
+            boolean incoming = path.endsWith("incoming");
+            boolean clickable = incoming && plugin.getCommandConfig().getBoolean("commands.msg.notifications.click.enabled", true);
+            String hoverText = plugin.getCommandConfig().getString("commands.msg.notifications.click.hover", "<yellow>Нажмите, чтобы ответить</yellow>");
 
-            if (clickable) {
-                component = component.clickEvent(ClickEvent.suggestCommand("/r "));
-                if (hoverText != null && !hoverText.isEmpty()) {
-                    component = component.hoverEvent(HoverEvent.showText(
-                            plugin.getChatFormatRenderer().parseFormat(hoverText)
-                    ));
+            for (String line : lines) {
+                String formatted = line
+                        .replace("%sender%", sender.getName())
+                        .replace("%sender_displayname%", sender.getDisplayName())
+                        .replace("%recipient%", target.getName())
+                        .replace("%recipient_displayname%", target.getDisplayName())
+                        .replace("%message%", message);
+
+                if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+                    formatted = PlaceholderAPI.setPlaceholders(recipient, formatted);
                 }
+
+                Component component = plugin.getChatFormatRenderer().parseFormat(formatted);
+
+                if (clickable) {
+                    component = component.clickEvent(ClickEvent.suggestCommand("/r "));
+                    if (hoverText != null && !hoverText.isEmpty()) {
+                        component = component.hoverEvent(HoverEvent.showText(
+                                plugin.getChatFormatRenderer().parseFormat(hoverText)
+                        ));
+                    }
+                }
+
+                recipient.sendMessage(component);
             }
 
-            recipient.sendMessage(component);
-        }
-
-        if (incoming && plugin.getCommandConfig().getBoolean("commands.msg.notifications.sound.enabled", true)) {
-            playNotificationSound(recipient);
-        }
+            if (incoming && plugin.getCommandConfig().getBoolean("commands.msg.notifications.sound.enabled", true)) {
+                playNotificationSound(recipient);
+            }
+        });
     }
 
     private void playNotificationSound(Player player) {
@@ -184,12 +186,7 @@ public class PrivateMessageCommand implements CommandExecutor {
     }
 
     private Player findPlayer(String name) {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getName().equalsIgnoreCase(name)) {
-                return player;
-            }
-        }
-        return null;
+        return Bukkit.getPlayerExact(name);
     }
 
     private String join(String[] args, int start) {
