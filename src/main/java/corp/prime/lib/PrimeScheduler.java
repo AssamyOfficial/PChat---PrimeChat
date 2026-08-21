@@ -24,6 +24,9 @@ public final class PrimeScheduler {
     }
 
     public void runAsync(Runnable task) {
+        if (folia && runAsyncFolia(task, 0L)) {
+            return;
+        }
         Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
     }
 
@@ -35,6 +38,9 @@ public final class PrimeScheduler {
     }
 
     public void runAsyncLater(Runnable task, long delay) {
+        if (folia && runAsyncFolia(task, delay)) {
+            return;
+        }
         Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, task, delay);
     }
 
@@ -43,6 +49,13 @@ public final class PrimeScheduler {
             return;
         }
         Bukkit.getScheduler().runTask(plugin, task);
+    }
+
+    public void runLater(Player player, Runnable task, long delay) {
+        if (player != null && folia && runEntity(player, task, delay)) {
+            return;
+        }
+        Bukkit.getScheduler().runTaskLater(plugin, task, delay);
     }
 
     private boolean detectFolia() {
@@ -66,6 +79,31 @@ public final class PrimeScheduler {
             );
             Consumer<Object> consumer = ignored -> task.run();
             runDelayed.invoke(scheduler, plugin, consumer, delay);
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            return false;
+        }
+    }
+
+    private boolean runAsyncFolia(Runnable task, long delay) {
+        try {
+            Method getter = Bukkit.class.getMethod("getAsyncScheduler");
+            Object scheduler = getter.invoke(null);
+            Method runDelayed = scheduler.getClass().getMethod(
+                    "runDelayed",
+                    JavaPlugin.class,
+                    Consumer.class,
+                    long.class,
+                    java.util.concurrent.TimeUnit.class
+            );
+            Consumer<Object> consumer = ignored -> task.run();
+            runDelayed.invoke(
+                    scheduler,
+                    plugin,
+                    consumer,
+                    Math.max(1L, delay),
+                    java.util.concurrent.TimeUnit.MILLISECONDS
+            );
             return true;
         } catch (ReflectiveOperationException | RuntimeException ignored) {
             return false;
