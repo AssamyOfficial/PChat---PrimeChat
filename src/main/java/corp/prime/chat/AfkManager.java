@@ -1,6 +1,5 @@
 package corp.prime.chat;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -46,7 +45,7 @@ public class AfkManager implements Listener {
                 "<green>◆</green> <gray>Вы снова активны.</gray>"
         );
 
-        Bukkit.getScheduler().runTask(plugin, () ->
+        PrimeScheduler.run(player, () ->
                 player.sendMessage(plugin.getChatFormatRenderer().parseFormat(message))
         );
     }
