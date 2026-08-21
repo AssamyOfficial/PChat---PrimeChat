@@ -7,13 +7,13 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AfkManager implements Listener {
     private final PrimeChat plugin;
-    private final Set<UUID> afk = new HashSet<>();
+    private final Set<UUID> afk = ConcurrentHashMap.newKeySet();
 
     public AfkManager(PrimeChat plugin) {
         this.plugin = plugin;
@@ -45,7 +45,7 @@ public class AfkManager implements Listener {
                 "<green>◆</green> <gray>Вы снова активны.</gray>"
         );
 
-        PrimeScheduler.run(player, () ->
+        plugin.getPrimeScheduler().run(player, () ->
                 player.sendMessage(plugin.getChatFormatRenderer().parseFormat(message))
         );
     }
