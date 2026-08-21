@@ -6,14 +6,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SpyManager implements Listener {
     private final PrimeChat plugin;
-    private final Set<UUID> socialSpy = new HashSet<>();
-    private final Set<UUID> commandSpy = new HashSet<>();
+    private final Set<UUID> socialSpy = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> commandSpy = ConcurrentHashMap.newKeySet();
 
     public SpyManager(PrimeChat plugin) {
         this.plugin = plugin;
@@ -58,7 +58,8 @@ public class SpyManager implements Listener {
             if (viewer == null || viewer.equals(sender) || viewer.equals(recipient)) {
                 continue;
             }
-            viewer.sendMessage(plugin.getChatFormatRenderer().parseFormat(
+
+            sendToPlayer(viewer, plugin.getChatFormatRenderer().parseFormat(
                     replace(format, sender, recipient, message)
             ));
         }
@@ -90,12 +91,17 @@ public class SpyManager implements Listener {
             if (viewer == null || viewer.equals(sender)) {
                 continue;
             }
-            viewer.sendMessage(plugin.getChatFormatRenderer().parseFormat(
+
+            sendToPlayer(viewer, plugin.getChatFormatRenderer().parseFormat(
                     format.replace("%player%", sender.getName())
                             .replace("%displayname%", sender.getDisplayName())
                             .replace("%command%", command)
             ));
         }
+    }
+
+    private void sendToPlayer(Player player, net.kyori.adventure.text.Component message) {
+        plugin.getPrimeScheduler().run(player, () -> player.sendMessage(message));
     }
 
     private String replace(String format, Player sender, Player recipient, String message) {
