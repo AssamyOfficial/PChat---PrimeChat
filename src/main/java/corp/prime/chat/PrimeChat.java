@@ -70,6 +70,7 @@ public final class PrimeChat extends JavaPlugin {
         reloadConfig();
         chatChannelManager.loadChannels();
         commandConfig.reload();
+        chatFormatRenderer.reloadSettings();
     }
 
     public ChatChannelManager getChatChannelManager() { return chatChannelManager; }
