@@ -12,6 +12,10 @@ public class ChatChannelRouter {
     public ChatChannel getChannelForMessage(Player player, String message) {
         ChatChannelManager manager = plugin.getChatChannelManager();
 
+        if (message == null || message.isEmpty()) {
+            return null;
+        }
+
         for (ChatChannel channel : manager.getChannels()) {
             if (!channel.isEnabled()) {
                 continue;
@@ -24,7 +28,6 @@ public class ChatChannelRouter {
 
             String permission = channel.getPermission();
             if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
-                player.sendMessage("§cУ вас нет прав для использования этого чата.");
                 return null;
             }
 
@@ -32,19 +35,20 @@ public class ChatChannelRouter {
         }
 
         ChatChannel local = manager.getChannel("local");
-        if (local != null && local.isEnabled()) {
-            String permission = local.getPermission();
-            if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
-                return null;
-            }
-            return local;
+        if (local == null || !local.isEnabled()) {
+            return null;
         }
 
-        return null;
+        String permission = local.getPermission();
+        if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
+            return null;
+        }
+
+        return local;
     }
 
     public String removeTrigger(ChatChannel channel, String message) {
-        if (channel == null) {
+        if (channel == null || message == null) {
             return message;
         }
 
@@ -66,7 +70,7 @@ public class ChatChannelRouter {
             return false;
         }
 
-        if (channel.isGlobal()) {
+        if (channel.isGlobal() || channel.isCommand()) {
             return true;
         }
 
@@ -76,11 +80,11 @@ public class ChatChannelRouter {
             }
 
             double radius = channel.getRadius();
-            return sender.getLocation().distanceSquared(viewer.getLocation()) <= radius * radius;
-        }
+            if (radius <= 0) {
+                return sender.equals(viewer);
+            }
 
-        if (channel.isCommand()) {
-            return true;
+            return sender.getLocation().distanceSquared(viewer.getLocation()) <= radius * radius;
         }
 
         return sender.equals(viewer);
