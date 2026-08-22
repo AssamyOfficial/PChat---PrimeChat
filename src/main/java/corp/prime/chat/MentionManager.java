@@ -5,14 +5,13 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -34,11 +33,7 @@ public final class MentionManager {
             return mentions;
         }
 
-        String symbol = plugin.getConfig().getString("mentions.symbol", "@");
-        if (symbol == null || symbol.isEmpty()) {
-            symbol = "@";
-        }
-
+        String symbol = getSymbol();
         Matcher matcher = Pattern.compile(
                 Pattern.quote(symbol) + "([A-Za-z0-9_]+)"
         ).matcher(message);
@@ -58,21 +53,29 @@ public final class MentionManager {
             return message;
         }
 
-        String symbol = plugin.getConfig().getString("mentions.symbol", "@");
+        String plainText = PlainTextComponentSerializer.plainText().serialize(message);
+        Set<String> mentionedNames = findMentionedPlayers(plainText);
+        if (mentionedNames.isEmpty()) {
+            return message;
+        }
+
+        String symbol = getSymbol();
         String color = plugin.getConfig().getString("mentions.color", "<#00E5FF>");
         boolean clickable = plugin.getConfig().getBoolean("mentions.clickable", true);
         boolean hoverEnabled = plugin.getConfig().getBoolean("mentions.hover", true);
 
-        if (symbol == null || symbol.isEmpty()) {
-            symbol = "@";
-        }
-
-        List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
-        onlinePlayers.sort((a, b) -> Integer.compare(b.getName().length(), a.getName().length()));
-
         Component result = message;
-        for (Player player : onlinePlayers) {
+        for (String mentionedName : mentionedNames) {
+            Player player = Bukkit.getPlayerExact(mentionedName);
+            if (player == null) {
+                continue;
+            }
+
             String mention = symbol + player.getName();
+            if (!plainText.contains(mention)) {
+                continue;
+            }
+
             Component mentionComponent = plugin.getChatFormatRenderer().parseFormat(color + mention);
 
             if (hoverEnabled) {
@@ -112,13 +115,7 @@ public final class MentionManager {
         }
 
         for (String mentionedName : findMentionedPlayers(message)) {
-            Player onlinePlayer = null;
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.getName().equalsIgnoreCase(mentionedName)) {
-                    onlinePlayer = player;
-                    break;
-                }
-            }
+            Player onlinePlayer = Bukkit.getPlayerExact(mentionedName);
 
             if (onlinePlayer != null) {
                 if (onlinePlayer.equals(sender) || !viewers.contains(onlinePlayer)) {
@@ -229,5 +226,10 @@ public final class MentionManager {
 
         Component notification = plugin.getChatFormatRenderer().parseFormat(message);
         scheduler.run(sender, () -> sender.sendMessage(notification));
+    }
+
+    private String getSymbol() {
+        String symbol = plugin.getConfig().getString("mentions.symbol", "@");
+        return symbol == null || symbol.isEmpty() ? "@" : symbol;
     }
 }
