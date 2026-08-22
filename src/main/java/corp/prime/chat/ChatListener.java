@@ -14,32 +14,35 @@ public class ChatListener implements Listener {
     private final PrimeChat plugin;
     private final PrimeScheduler scheduler;
     private final MentionManager mentionManager;
+    private final ChatChannelRouter channelRouter;
+    private final ChatFormatRenderer formatRenderer;
+    private final ChatManager chatManager;
 
     public ChatListener(PrimeChat plugin) {
         this.plugin = plugin;
         this.scheduler = plugin.getPrimeScheduler();
         this.mentionManager = new MentionManager(plugin);
+        this.channelRouter = plugin.getChatChannelRouter();
+        this.formatRenderer = plugin.getChatFormatRenderer();
+        this.chatManager = plugin.getChatManager();
     }
 
     @EventHandler
     public void onChat(AsyncChatEvent event) {
         Player sender = event.getPlayer();
 
-        if (!plugin.getChatManager().isEnabled() && !plugin.getChatManager().canBypass(sender)) {
+        if (!chatManager.isEnabled() && !chatManager.canBypass(sender)) {
             event.setCancelled(true);
-            scheduler.run(sender, () -> sender.sendMessage(
-                    plugin.getChatFormatRenderer().parseFormat(
-                            plugin.getCommandConfig().getString(
-                                    "commands.chat.messages.blocked",
-                                    "<red>◆</red> <gray>Чат сейчас отключён.</gray>"
-                            )
-                    )
-            ));
+            String blockedMessage = plugin.getCommandConfig().getString(
+                    "commands.chat.messages.blocked",
+                    "<red>◆</red> <gray>Чат сейчас отключён.</gray>"
+            );
+            scheduler.run(sender, () -> sender.sendMessage(formatRenderer.parseFormat(blockedMessage)));
             return;
         }
 
         String messageText = PlainTextComponentSerializer.plainText().serialize(event.message());
-        ChatChannel channel = plugin.getChatChannelRouter().getChannelForMessage(sender, messageText);
+        ChatChannel channel = channelRouter.getChannelForMessage(sender, messageText);
 
         if (channel == null) {
             event.setCancelled(true);
@@ -50,36 +53,39 @@ public class ChatListener implements Listener {
         if (permission != null && !permission.isEmpty() && !sender.hasPermission(permission)) {
             event.setCancelled(true);
             scheduler.run(sender, () -> sender.sendMessage(
-                    plugin.getChatFormatRenderer().parseFormat(
+                    formatRenderer.parseFormat(
                             "<red>◆</red> <gray>У вас нет прав для использования этого чата.</gray>"
                     )
             ));
             return;
         }
 
-        String processedMessage = plugin.getChatChannelRouter().removeTrigger(channel, messageText);
-        if (processedMessage.trim().isEmpty()) {
+        String processedMessage = channelRouter.removeTrigger(channel, messageText);
+        if (processedMessage.isBlank()) {
             event.setCancelled(true);
             return;
         }
 
-        Component finalFormatted = plugin.getChatFormatRenderer()
-                .render(sender, channel, processedMessage, event.message());
+        Component finalFormatted = formatRenderer.render(
+                sender,
+                channel,
+                processedMessage,
+                event.message()
+        );
         finalFormatted = mentionManager.processMentions(finalFormatted);
 
-        event.viewers().removeIf(audience -> audience instanceof Player
-                && !plugin.getChatChannelRouter().canReceiveMessage(
-                sender,
-                (Player) audience,
-                channel
-        ));
+        event.viewers().removeIf(audience -> audience instanceof Player player
+                && !channelRouter.canReceiveMessage(sender, player, channel));
 
         mentionManager.processNotifications(messageText, sender, event.viewers());
 
-        boolean someoneHeard = event.viewers().stream()
-                .filter(audience -> audience instanceof Player)
-                .map(audience -> (Player) audience)
-                .anyMatch(player -> !player.equals(sender));
+        boolean someoneHeard = false;
+        for (var audience : event.viewers()) {
+            if (audience instanceof Player player && !player.equals(sender)) {
+                someoneHeard = true;
+                break;
+            }
+        }
 
         if (!someoneHeard && plugin.getConfig().getBoolean("unheard-message.enabled", true)) {
             Boolean channelEnabled = channel.getUnheardMessageEnabled();
@@ -102,7 +108,7 @@ public class ChatListener implements Listener {
                     unheardMessage = PlaceholderAPI.setPlaceholders(sender, unheardMessage);
                 }
 
-                Component notification = plugin.getChatFormatRenderer().parseFormat(unheardMessage);
+                Component notification = formatRenderer.parseFormat(unheardMessage);
                 scheduler.run(sender, () -> sender.sendMessage(notification));
             }
         }
