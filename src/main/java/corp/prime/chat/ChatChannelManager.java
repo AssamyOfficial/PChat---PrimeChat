@@ -5,11 +5,15 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatChannelManager {
     private final PrimeChat plugin;
     private final List<ChatChannel> channels = new ArrayList<>();
+    private final Map<String, ChatChannel> channelsById = new LinkedHashMap<>();
+    private final Map<String, ChatChannel> commandChannels = new LinkedHashMap<>();
 
     public ChatChannelManager(PrimeChat plugin) {
         this.plugin = plugin;
@@ -18,6 +22,8 @@ public class ChatChannelManager {
 
     public void loadChannels() {
         channels.clear();
+        channelsById.clear();
+        commandChannels.clear();
 
         ConfigurationSection section = plugin.getConfig().getConfigurationSection("channels");
         if (section == null) {
@@ -53,7 +59,7 @@ public class ChatChannelManager {
                 unheardMessage = channelSection.getString("unheard-message.message");
             }
 
-            channels.add(new ChatChannel(
+            ChatChannel channel = new ChatChannel(
                     id,
                     enabled,
                     mode,
@@ -65,21 +71,32 @@ public class ChatChannelManager {
                     radius,
                     unheardMessageEnabled,
                     unheardMessage
-            ));
+            );
 
-            plugin.getLogger().info("Загружен чат-канал: " + id + " (" + mode + ")");
+            channels.add(channel);
+            channelsById.put(id.toLowerCase(), channel);
+
+            if (channel.isCommand()) {
+                if (command != null && !command.isEmpty()) {
+                    commandChannels.put(command.toLowerCase(), channel);
+                }
+
+                for (String alias : aliases) {
+                    if (alias != null && !alias.isEmpty()) {
+                        commandChannels.put(alias.toLowerCase(), channel);
+                    }
+                }
+            }
         }
 
-        plugin.getLogger().info("Всего загружено каналов: " + channels.size());
+        plugin.getLogger().info("Загружено каналов: " + channels.size());
     }
 
     public ChatChannel getChannel(String id) {
-        for (ChatChannel channel : channels) {
-            if (channel.getId().equalsIgnoreCase(id)) {
-                return channel;
-            }
+        if (id == null || id.isEmpty()) {
+            return null;
         }
-        return null;
+        return channelsById.get(id.toLowerCase());
     }
 
     public ChatChannel getChannelByCommand(String command) {
@@ -88,26 +105,13 @@ public class ChatChannelManager {
         }
 
         String cleanCommand = command.startsWith("/") ? command.substring(1) : command;
+        ChatChannel channel = commandChannels.get(cleanCommand.toLowerCase());
 
-        for (ChatChannel channel : channels) {
-            if (!channel.isEnabled() || !channel.isCommand()) {
-                continue;
-            }
-
-            if (channel.getCommand() != null
-                    && !channel.getCommand().isEmpty()
-                    && channel.getCommand().equalsIgnoreCase(cleanCommand)) {
-                return channel;
-            }
-
-            for (String alias : channel.getAliases()) {
-                if (alias != null && alias.equalsIgnoreCase(cleanCommand)) {
-                    return channel;
-                }
-            }
+        if (channel == null || !channel.isEnabled()) {
+            return null;
         }
 
-        return null;
+        return channel;
     }
 
     public List<ChatChannel> getChannels() {
@@ -121,7 +125,9 @@ public class ChatChannelManager {
 
         String permission = channel.getPermission();
         if (permission != null && !permission.isEmpty() && !sender.hasPermission(permission)) {
-            sender.sendMessage("§cУ вас нет прав для использования этого чата.");
+            plugin.getPrimeScheduler().run(sender, () ->
+                    sender.sendMessage("§cУ вас нет прав для использования этого чата.")
+            );
             return;
         }
 
