@@ -15,10 +15,26 @@ public class ChatFormatRenderer {
     private final PrimeChat plugin;
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
     private final boolean placeholderApiEnabled;
+    private boolean hoverEnabled;
+    private boolean clickEnabled;
+    private String clickAction;
+    private List<String> hoverLines;
+    private boolean chatColorEnabled;
+    private String chatColorPermission;
 
     public ChatFormatRenderer(PrimeChat plugin) {
         this.plugin = plugin;
         this.placeholderApiEnabled = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
+        reloadSettings();
+    }
+
+    public void reloadSettings() {
+        hoverEnabled = plugin.getConfig().getBoolean("player-interaction.hover.enabled", true);
+        clickEnabled = plugin.getConfig().getBoolean("player-interaction.click.enabled", true);
+        clickAction = plugin.getConfig().getString("player-interaction.click.action", "suggest-message");
+        hoverLines = plugin.getConfig().getStringList("player-interaction.hover.text");
+        chatColorEnabled = plugin.getConfig().getBoolean("chat-color.enabled", true);
+        chatColorPermission = plugin.getConfig().getString("chat-color.permission", "primechat.chatcolor");
     }
 
     public Component parseFormat(String format) {
@@ -28,28 +44,17 @@ public class ChatFormatRenderer {
 
         if (format.indexOf('&') >= 0) {
             format = format
-                    .replace("&0", "<black>")
-                    .replace("&1", "<dark_blue>")
-                    .replace("&2", "<dark_green>")
-                    .replace("&3", "<dark_aqua>")
-                    .replace("&4", "<dark_red>")
-                    .replace("&5", "<dark_purple>")
-                    .replace("&6", "<gold>")
-                    .replace("&7", "<gray>")
-                    .replace("&8", "<dark_gray>")
-                    .replace("&9", "<blue>")
-                    .replace("&a", "<green>")
-                    .replace("&b", "<aqua>")
-                    .replace("&c", "<red>")
-                    .replace("&d", "<light_purple>")
-                    .replace("&e", "<yellow>")
-                    .replace("&f", "<white>")
-                    .replace("&k", "<obfuscated>")
-                    .replace("&l", "<bold>")
-                    .replace("&m", "<strikethrough>")
-                    .replace("&n", "<underlined>")
-                    .replace("&o", "<italic>")
-                    .replace("&r", "<reset>");
+                    .replace("&0", "<black>").replace("&1", "<dark_blue>")
+                    .replace("&2", "<dark_green>").replace("&3", "<dark_aqua>")
+                    .replace("&4", "<dark_red>").replace("&5", "<dark_purple>")
+                    .replace("&6", "<gold>").replace("&7", "<gray>")
+                    .replace("&8", "<dark_gray>").replace("&9", "<blue>")
+                    .replace("&a", "<green>").replace("&b", "<aqua>")
+                    .replace("&c", "<red>").replace("&d", "<light_purple>")
+                    .replace("&e", "<yellow>").replace("&f", "<white>")
+                    .replace("&k", "<obfuscated>").replace("&l", "<bold>")
+                    .replace("&m", "<strikethrough>").replace("&n", "<underlined>")
+                    .replace("&o", "<italic>").replace("&r", "<reset>");
         }
 
         return miniMessage.deserialize(format);
@@ -75,7 +80,7 @@ public class ChatFormatRenderer {
     }
 
     public Component createPlayerHover(Player player) {
-        List<String> lines = plugin.getConfig().getStringList("player-interaction.hover.text");
+        List<String> lines = hoverLines;
 
         if (lines.isEmpty()) {
             lines = List.of(
@@ -108,7 +113,7 @@ public class ChatFormatRenderer {
         return hover;
     }
 
-    private Component createPlayerComponent(Player player, Component hover, boolean hoverEnabled, boolean clickEnabled, String clickAction) {
+    private Component createPlayerComponent(Player player, Component hover) {
         Component component = Component.text(player.getName());
 
         if (hoverEnabled) {
@@ -116,15 +121,13 @@ public class ChatFormatRenderer {
         }
 
         if (clickEnabled && clickAction.equalsIgnoreCase("suggest-message")) {
-            component = component.clickEvent(
-                    ClickEvent.suggestCommand("/msg " + player.getName() + " ")
-            );
+            component = component.clickEvent(ClickEvent.suggestCommand("/msg " + player.getName() + " "));
         }
 
         return component;
     }
 
-    private Component createDisplayNameComponent(Player player, Component hover, boolean hoverEnabled, boolean clickEnabled, String clickAction) {
+    private Component createDisplayNameComponent(Player player, Component hover) {
         Component component = player.displayName();
 
         if (hoverEnabled) {
@@ -132,9 +135,7 @@ public class ChatFormatRenderer {
         }
 
         if (clickEnabled && clickAction.equalsIgnoreCase("suggest-message")) {
-            component = component.clickEvent(
-                    ClickEvent.suggestCommand("/msg " + player.getName() + " ")
-            );
+            component = component.clickEvent(ClickEvent.suggestCommand("/msg " + player.getName() + " "));
         }
 
         return component;
@@ -145,50 +146,17 @@ public class ChatFormatRenderer {
             return Component.empty();
         }
 
-        String format = processPlaceholderAPI(player, channel.getFormat());
-        Component formatted = parseFormat(format);
-
-        boolean hoverEnabled = plugin.getConfig().getBoolean(
-                "player-interaction.hover.enabled",
-                true
-        );
-
-        boolean clickEnabled = plugin.getConfig().getBoolean(
-                "player-interaction.click.enabled",
-                true
-        );
-
-        String clickAction = plugin.getConfig().getString(
-                "player-interaction.click.action",
-                "suggest-message"
-        );
-
+        Component formatted = parseFormat(processPlaceholderAPI(player, channel.getFormat()));
         Component playerHover = createPlayerHover(player);
-
-        Component playerComponent = createPlayerComponent(
-                player,
-                playerHover,
-                hoverEnabled,
-                clickEnabled,
-                clickAction
-        );
 
         formatted = formatted.replaceText(builder -> builder
                 .matchLiteral("<player>")
-                .replacement(playerComponent)
-        );
-
-        Component displayNameComponent = createDisplayNameComponent(
-                player,
-                playerHover,
-                hoverEnabled,
-                clickEnabled,
-                clickAction
+                .replacement(createPlayerComponent(player, playerHover))
         );
 
         formatted = formatted.replaceText(builder -> builder
                 .matchLiteral("<displayname>")
-                .replacement(displayNameComponent)
+                .replacement(createDisplayNameComponent(player, playerHover))
         );
 
         Component messageComponent = parsePlayerMessage(player, messageText);
@@ -200,23 +168,13 @@ public class ChatFormatRenderer {
     }
 
     private Component parsePlayerMessage(Player player, String message) {
-        boolean enabled = plugin.getConfig().getBoolean(
-                "chat-color.enabled",
-                true
-        );
-
-        if (!enabled) {
+        if (!chatColorEnabled) {
             return Component.text(message);
         }
 
-        String permission = plugin.getConfig().getString(
-                "chat-color.permission",
-                "primechat.chatcolor"
-        );
-
-        if (permission != null
-                && !permission.isEmpty()
-                && !player.hasPermission(permission)) {
+        if (chatColorPermission != null
+                && !chatColorPermission.isEmpty()
+                && !player.hasPermission(chatColorPermission)) {
             return Component.text(message);
         }
 
