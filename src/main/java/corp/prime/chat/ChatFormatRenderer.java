@@ -14,9 +14,11 @@ public class ChatFormatRenderer {
 
     private final PrimeChat plugin;
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
+    private final boolean placeholderApiEnabled;
 
     public ChatFormatRenderer(PrimeChat plugin) {
         this.plugin = plugin;
+        this.placeholderApiEnabled = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
     }
 
     public Component parseFormat(String format) {
@@ -24,35 +26,37 @@ public class ChatFormatRenderer {
             return Component.empty();
         }
 
-        format = format
-                .replace("&0", "<black>")
-                .replace("&1", "<dark_blue>")
-                .replace("&2", "<dark_green>")
-                .replace("&3", "<dark_aqua>")
-                .replace("&4", "<dark_red>")
-                .replace("&5", "<dark_purple>")
-                .replace("&6", "<gold>")
-                .replace("&7", "<gray>")
-                .replace("&8", "<dark_gray>")
-                .replace("&9", "<blue>")
-                .replace("&a", "<green>")
-                .replace("&b", "<aqua>")
-                .replace("&c", "<red>")
-                .replace("&d", "<light_purple>")
-                .replace("&e", "<yellow>")
-                .replace("&f", "<white>")
-                .replace("&k", "<obfuscated>")
-                .replace("&l", "<bold>")
-                .replace("&m", "<strikethrough>")
-                .replace("&n", "<underlined>")
-                .replace("&o", "<italic>")
-                .replace("&r", "<reset>");
+        if (format.indexOf('&') >= 0) {
+            format = format
+                    .replace("&0", "<black>")
+                    .replace("&1", "<dark_blue>")
+                    .replace("&2", "<dark_green>")
+                    .replace("&3", "<dark_aqua>")
+                    .replace("&4", "<dark_red>")
+                    .replace("&5", "<dark_purple>")
+                    .replace("&6", "<gold>")
+                    .replace("&7", "<gray>")
+                    .replace("&8", "<dark_gray>")
+                    .replace("&9", "<blue>")
+                    .replace("&a", "<green>")
+                    .replace("&b", "<aqua>")
+                    .replace("&c", "<red>")
+                    .replace("&d", "<light_purple>")
+                    .replace("&e", "<yellow>")
+                    .replace("&f", "<white>")
+                    .replace("&k", "<obfuscated>")
+                    .replace("&l", "<bold>")
+                    .replace("&m", "<strikethrough>")
+                    .replace("&n", "<underlined>")
+                    .replace("&o", "<italic>")
+                    .replace("&r", "<reset>");
+        }
 
         return miniMessage.deserialize(format);
     }
 
     private String processPlaceholderAPI(Player player, String format) {
-        if (!Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+        if (!placeholderApiEnabled) {
             return format;
         }
 
@@ -90,7 +94,7 @@ public class ChatFormatRenderer {
                     .replace("%displayname%", player.getDisplayName())
                     .replace("%display_name%", player.getDisplayName());
 
-            if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            if (placeholderApiEnabled) {
                 line = PlaceholderAPI.setPlaceholders(player, line);
             }
 
