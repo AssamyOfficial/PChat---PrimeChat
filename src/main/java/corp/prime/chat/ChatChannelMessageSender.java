@@ -12,22 +12,26 @@ public class ChatChannelMessageSender {
     }
 
     public void send(Player sender, ChatChannel channel, String message) {
-        if (channel == null || !channel.isEnabled() || message == null || message.trim().isEmpty()) {
+        if (channel == null || !channel.isEnabled() || message == null || message.isBlank()) {
             return;
         }
 
         String permission = channel.getPermission();
         if (permission != null && !permission.isEmpty() && !sender.hasPermission(permission)) {
-            sender.sendMessage("§cУ вас нет прав для использования этого чата.");
+            plugin.getPrimeScheduler().run(sender, () ->
+                    sender.sendMessage("§cУ вас нет прав для использования этого чата.")
+            );
             return;
         }
 
         Component formatted = plugin.getChatChannelFormatter().format(sender, channel, message);
 
         for (Player viewer : Bukkit.getOnlinePlayers()) {
-            if (plugin.getChatChannelRouter().canReceiveMessage(sender, viewer, channel)) {
-                viewer.sendMessage(formatted);
+            if (!plugin.getChatChannelRouter().canReceiveMessage(sender, viewer, channel)) {
+                continue;
             }
+
+            plugin.getPrimeScheduler().run(viewer, () -> viewer.sendMessage(formatted));
         }
     }
 }
