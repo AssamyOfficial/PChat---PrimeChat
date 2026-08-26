@@ -2,9 +2,11 @@ package corp.prime.lib;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public final class PrimeScheduler {
@@ -17,43 +19,61 @@ public final class PrimeScheduler {
     }
 
     public void run(Runnable task) {
-        if (folia && runGlobal(task, 0L)) {
-            return;
+        if (folia) {
+            if (runGlobal(task, 0L)) {
+                return;
+            }
+            throw new IllegalStateException("Folia GlobalRegionScheduler is unavailable");
         }
         Bukkit.getScheduler().runTask(plugin, task);
     }
 
     public void runAsync(Runnable task) {
-        if (folia && runAsyncFolia(task, 0L)) {
-            return;
+        if (folia) {
+            if (runAsyncFolia(task, 0L)) {
+                return;
+            }
+            throw new IllegalStateException("Folia AsyncScheduler is unavailable");
         }
         Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
     }
 
     public void runLater(Runnable task, long delay) {
-        if (folia && runGlobal(task, delay)) {
-            return;
+        if (folia) {
+            if (runGlobal(task, delay)) {
+                return;
+            }
+            throw new IllegalStateException("Folia GlobalRegionScheduler is unavailable");
         }
         Bukkit.getScheduler().runTaskLater(plugin, task, delay);
     }
 
     public void runAsyncLater(Runnable task, long delay) {
-        if (folia && runAsyncFolia(task, delay)) {
-            return;
+        if (folia) {
+            if (runAsyncFolia(task, delay)) {
+                return;
+            }
+            throw new IllegalStateException("Folia AsyncScheduler is unavailable");
         }
         Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, task, delay);
     }
 
     public void run(Player player, Runnable task) {
-        if (player != null && folia && runEntity(player, task, 0L)) {
-            return;
+        if (player != null && folia) {
+            if (runEntity(player, task, 0L)) {
+                return;
+            }
+            throw new IllegalStateException("Folia EntityScheduler is unavailable");
         }
         Bukkit.getScheduler().runTask(plugin, task);
     }
 
     public void runLater(Player player, Runnable task, long delay) {
-        if (player != null && folia && runEntity(player, task, delay)) {
-            return;
+        if (player != null && folia) {
+            if (runEntity(player, task, delay)) {
+                return;
+            }
+            throw new IllegalStateException("Folia EntityScheduler is unavailable");
         }
         Bukkit.getScheduler().runTaskLater(plugin, task, delay);
     }
@@ -73,7 +93,7 @@ public final class PrimeScheduler {
             Object scheduler = getter.invoke(null);
             Method runDelayed = scheduler.getClass().getMethod(
                     "runDelayed",
-                    JavaPlugin.class,
+                    Plugin.class,
                     Consumer.class,
                     long.class
             );
@@ -91,10 +111,10 @@ public final class PrimeScheduler {
             Object scheduler = getter.invoke(null);
             Method runDelayed = scheduler.getClass().getMethod(
                     "runDelayed",
-                    JavaPlugin.class,
+                    Plugin.class,
                     Consumer.class,
                     long.class,
-                    java.util.concurrent.TimeUnit.class
+                    TimeUnit.class
             );
             Consumer<Object> consumer = ignored -> task.run();
             runDelayed.invoke(
@@ -102,7 +122,7 @@ public final class PrimeScheduler {
                     plugin,
                     consumer,
                     Math.max(1L, delay),
-                    java.util.concurrent.TimeUnit.MILLISECONDS
+                    TimeUnit.MILLISECONDS
             );
             return true;
         } catch (ReflectiveOperationException | RuntimeException ignored) {
@@ -116,7 +136,7 @@ public final class PrimeScheduler {
             Object scheduler = getter.invoke(player);
             Method runDelayed = scheduler.getClass().getMethod(
                     "runDelayed",
-                    JavaPlugin.class,
+                    Plugin.class,
                     Consumer.class,
                     Runnable.class,
                     long.class
